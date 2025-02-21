@@ -1,117 +1,50 @@
-// src/lib/session.ts - update
-import { cookies } from 'next/headers'
-import { getToken, setToken } from './token'
-import { prisma } from './prisma'
-import type { Session } from '@/types'
+// src/lib/session.ts
+import { sign, verify } from 'jsonwebtoken';
+import { NextRequest } from 'next/server'; // Для типизации запроса
 
-const SESSION_TOKEN_NAME = 'session_token'
-
-export async function createSession(userId: number) {
-    console.log('Creating session for user:', userId)
-    const token = setToken({ userId })
-
-    cookies().set({
-        name: SESSION_TOKEN_NAME,
-        value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 30 * 24 * 60 * 60
-    })
-
-    return token
-}
-
-// export async function getSession(): Promise<Session | null> {
-//     const sessionToken = cookies().get(SESSION_TOKEN_NAME)?.value
-//     console.log('Getting session, token exists:', !!sessionToken)
-
-//     if (!sessionToken) {
-//         return null
-//     }
-
-//     const payload = getToken(sessionToken)
-//     console.log('Token payload:', payload)
-
-//     if (!payload?.userId) {
-//         console.log('Invalid token payload')
-//         return null
-//     }
-
-//     try {
-//         const user = await prisma.user.findUnique({
-//             where: { id: payload.userId },
-//             select: {
-//                 id: true,
-//                 telegramId: true,
-//                 username: true,
-//                 firstName: true,
-//                 lastName: true,
-//                 role: true
-//             }
-//         })
-
-//         console.log('Session user data:', user)
-
-//         if (!user) {
-//             console.log('User not found in database')
-//             return null
-//         }
-
-//         return {
-//             user: {
-//                 ...user,
-//                 id: user.id // Теперь это точно number
-//             }
-//         }
-//     } catch (error) {
-//         console.error('Error getting session:', error)
-//         return null
-//     }
-// }
-
-// export async function clearSession() {
-//     console.log('Clearing session')
-//     cookies().delete(SESSION_TOKEN_NAME)
-// }
-
-export async function getSession() {
-    const sessionToken = cookies().get(SESSION_TOKEN_NAME)?.value
-    console.log('[Session] Cookie token:', sessionToken)
-
-    if (!sessionToken) {
-        console.log('[Session] No token found')
-        return null
-    }
-
-    const payload = getToken(sessionToken)
-    console.log('[Session] Token payload:', payload)
-
-    if (!payload?.userId) {
-        console.log('[Session] Invalid token payload')
-        return null
-    }
+/**
+ * Получает сессию пользователя из токена в заголовке Authorization (для серверных API-роутов).
+ * @param request - Объект запроса Next.js
+ * @returns Объект сессии или null, если токен отсутствует или недействителен
+ */
+export async function getSession(request: NextRequest) {
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) return null;
 
     try {
-        const user = await prisma.user.findUnique({
-            where: { id: payload.userId },
-            include: {
-                city: true,
-                district: true
-            }
-        })
-
-        console.log('[Session] Found user:', user)
-
-        if (!user) {
-            console.log('[Session] User not found in database')
-            return null
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            throw new Error('JWT_SECRET is not defined in environment variables');
         }
-
-        return { user }
+        const decoded = verify(token, secret) as { userId: number };
+        return { user: { id: decoded.userId } };
     } catch (error) {
-        console.error('[Session] Error getting session:', error)
-        return null
+        console.error('Session verification error:', error);
+        return null;
     }
+}
+
+/**
+ * Создает сессионный токен (JWT) для пользователя.
+ * @param userId - ID пользователя
+ * @returns Promise<string> - Сгенерированный JWT-токен
+ */
+export async function createSession(userId: number): Promise<string> {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+    return sign({ userId }, secret, { expiresIn: '7d' });
+}
+
+/**
+ * Очищает сессию пользователя (в данном случае ничего не делает на сервере,
+ * так как токен хранится на клиенте в localStorage).
+ * @returns Promise<void>
+ */
+export async function clearSession(): Promise<void> {
+    // Поскольку сессия управляется через localStorage на клиенте,
+    // серверная очистка не требуется. Эта функция оставлена для совместимости
+    // и может быть расширена, если вы добавите серверное управление сессиями.
+    return Promise.resolve();
 }
