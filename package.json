@@ -13,7 +13,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "if [ \"$VERCEL\" != \"1\" ]; then husky; fi"
   },
   "dependencies": {
     "@prisma/client": "5.9.1",
