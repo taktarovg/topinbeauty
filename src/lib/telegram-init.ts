@@ -1,8 +1,11 @@
 // src/lib/telegram-init.ts
-import { WebApp } from '@telegram-apps/sdk';
-import { TelegramProvider, useTelegramUser, useTelegramWebApp } from '@telegram-apps/sdk-react';
+import { init } from '@telegram-apps/sdk';
 
-export { WebApp, TelegramProvider, useTelegramUser, useTelegramWebApp };
+// Инициализация WebApp
+export const WebApp = init({
+  debug: process.env.NODE_ENV === 'development',
+});
 
-// Добавляем типы
+// Удалите некорректные реэкспорты
+// export { TelegramProvider, useTelegramUser, useTelegramWebApp } from '@telegram-apps/sdk-react';
 export type { WebAppUser } from '@telegram-apps/sdk';

@@ -1,62 +1,59 @@
 // src/components/telegram/TelegramAutoAuth.tsx
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useToast } from '@/components/ui/use-toast'
-import { useAuthContext } from '@/providers/AuthProvider'
-import { useTelegramWebApp, useTelegramUser } from '@/lib/telegram-init'
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuthContext } from '@/providers/AuthProvider';
+import { WebApp } from '@/lib/telegram';
 
 export default function TelegramAutoAuth() {
-  const router = useRouter()
-  const { login } = useAuthContext()
-  const { toast } = useToast()
-  const webApp = useTelegramWebApp()
-  const user = useTelegramUser()
+  const router = useRouter();
+  const { login, user } = useAuthContext();
+  const { toast } = useToast();
 
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Проверяем, запущено ли приложение в Telegram
-        if (!webApp || !user) {
+        if (!WebApp.initData) {
           console.log('Not in Telegram WebApp environment');
           return;
         }
 
-        // Подготавливаем данные для авторизации
+        const telegramUser = WebApp.initDataUnsafe.user;
+        if (!telegramUser) throw new Error('No Telegram user data');
+
         const authData = {
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name || '',
-          username: user.username || '',
-          photo_url: user.photo_url,
+          id: telegramUser.id,
+          first_name: telegramUser.first_name,
+          last_name: telegramUser.last_name || '',
+          username: telegramUser.username || '',
+          photo_url: telegramUser.photo_url || '',
           auth_date: Math.floor(Date.now() / 1000),
-          hash: webApp.initData
+          hash: WebApp.initData,
         };
 
-        // Авторизуем пользователя
-        await login(authData);
+        if (!user) {
+          await login(authData);
+          toast({
+            title: 'Добро пожаловать!',
+            description: 'Вы успешно авторизованы',
+          });
+        }
 
-        // Показываем уведомление об успешной авторизации
-        toast({
-          title: 'Успешно',
-          description: 'Вы авторизованы в системе'
-        });
-
-        // Редиректим на главную
-        router.push('/');
+        router.replace('/');
       } catch (error) {
         console.error('Telegram auto auth error:', error);
         toast({
           title: 'Ошибка',
-          description: 'Не удалось выполнить автоматический вход',
-          variant: 'destructive'
+          description: 'Не удалось выполнить вход',
+          variant: 'destructive',
         });
       }
     };
 
     initAuth();
-  }, [webApp, user, login, router, toast]);
+  }, [login, user, router, toast]);
 
   return null;
 }
