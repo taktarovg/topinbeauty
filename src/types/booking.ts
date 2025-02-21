@@ -8,8 +8,21 @@
 // }
 
 // src/types/booking.ts
+// src/types/booking.ts
 import { Booking, User, Service, MasterProfile } from '@prisma/client';
+import { z } from 'zod';
 
+// Схема валидации для создания бронирования
+export const bookingSchema = z.object({
+  userId: z.number().int().positive(),
+  serviceId: z.number().int().positive(),
+  masterId: z.number().int().positive(),
+  bookingDateTime: z.string().datetime(), // ISO-строка даты и времени
+  status: z.enum(['PENDING', 'CONFIRMED', 'CANCELED', 'COMPLETED']).optional().default('PENDING'),
+  notes: z.string().optional().nullable(),
+});
+
+// Тип для бронирования с отношениями
 export type BookingWithRelations = Booking & {
   user: Pick<User, 'telegramId' | 'firstName' | 'lastName'>;
   service: Service & {
@@ -19,53 +32,3 @@ export type BookingWithRelations = Booking & {
   };
   master: MasterProfile;
 };
-
-export interface TimeSlot {
-  time: string
-  isAvailable: boolean
-  isPast: boolean
-}
-
-export interface TimeSlotResponse {
-  slots: TimeSlot[]
-  availability: {
-    totalSlots: number
-    availableSlots: number
-    isFullyBooked: boolean
-    nextAvailableSlot?: string
-  }
-  schedule: {
-    workHours: {
-      start: string
-      end: string
-    }
-    breaks: Array<{
-      start: string
-      end: string
-    }>
-    bufferTime: number
-  }
-}
-
-export interface DaySchedule {
-  date: Date
-  slots: TimeSlot[]
-  isWorkingDay: boolean
-}
-
-export interface BookingFormData {
-  serviceId: number
-  masterId: number
-  date: Date
-  time: string
-  notes?: string
-}
-
-export type { BookingStatus }
-
-export interface BookingFilters {
-  status?: BookingStatus
-  from?: Date
-  to?: Date
-  masterId?: number
-}
