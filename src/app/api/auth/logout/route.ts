@@ -1,8 +1,7 @@
 // src/app/api/auth/logout/route.ts
-import { NextResponse } from 'next/server'
-import { clearSession } from '@/lib/session'
+import { NextResponse } from 'next/server';
 
 export async function POST() {
-    await clearSession()
-    return NextResponse.json({ success: true })
+    // Ничего не делаем на сервере, так как токен удаляется на клиенте
+    return NextResponse.json({ success: true });
 }

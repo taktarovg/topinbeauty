@@ -5,6 +5,7 @@ import { createContext, useContext, ReactNode, useEffect, useState } from 'react
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import type { User } from '@prisma/client';
+import { isTelegramMiniApp } from '@/lib/telegram'; // Импорт функции
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +13,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
+  isTelegramWebApp: boolean; // Добавляем новое свойство
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -82,7 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession();
   }, []);
 
-  const value = { user, login, logout, isLoading, error };
+  const value = { 
+    user, 
+    login, 
+    logout, 
+    isLoading, 
+    error, 
+    isTelegramWebApp: isTelegramMiniApp(), // Добавляем значение
+  };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
