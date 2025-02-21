@@ -7,8 +7,7 @@
 //   master: MasterProfile
 // }
 
-// src/types/booking.ts
-// src/types/booking.ts
+// src/types/booking.ts// src/types/booking.ts
 import { Booking, User, Service, MasterProfile } from '@prisma/client';
 import { z } from 'zod';
 
@@ -17,8 +16,9 @@ export const bookingSchema = z.object({
   userId: z.number().int().positive(),
   serviceId: z.number().int().positive(),
   masterId: z.number().int().positive(),
-  bookingDateTime: z.string().datetime(), // ISO-строка даты и времени
+  bookingDateTime: z.string().datetime(),
   status: z.enum(['PENDING', 'CONFIRMED', 'CANCELED', 'COMPLETED']).optional().default('PENDING'),
+  cancelDeadline: z.string().datetime(), // Добавляем обязательное поле
   notes: z.string().optional().nullable(),
 });
 
