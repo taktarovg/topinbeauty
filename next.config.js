@@ -3,6 +3,7 @@
 const nextConfig = {
   images: {
     domains: ['localhost', 'ngrok-free.app'],
+    reactStrictMode: true,
   },
   async headers() {
     return [
@@ -19,4 +20,4 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig
+module.exports = nextConfig;
