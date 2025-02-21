@@ -1,9 +1,10 @@
 // next.config.js - update
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
   images: {
     domains: ['localhost', 'ngrok-free.app'],
-    reactStrictMode: true,
+
   },
   async headers() {
     return [
