@@ -47,9 +47,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = async () => { ... }; // Оставьте как есть
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      localStorage.removeItem('sessionToken');
+      router.push('/login');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  useEffect(() => { ... }); // Оставьте как есть
+  useEffect(() => {
+    const checkSession = async () => {
+      const token = localStorage.getItem('sessionToken');
+      if (token) {
+        try {
+          const response = await fetch('/api/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+          }
+        } catch (err) {
+          localStorage.removeItem('sessionToken');
+        }
+      }
+      setIsLoading(false);
+    };
+    checkSession();
+  }, []);
 
   const value = { user, login, logout, isLoading, error };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
