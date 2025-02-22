@@ -1,65 +1,76 @@
-// src/components/bookings/ClientBookingsList.tsx - new
-'use client'
+// src/components/bookings/ClientBookingsList.tsx
+'use client';
 
-import { useState } from 'react'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar } from '@/components/ui/Avatar'
-import { useToast } from '@/components/ui/use-toast'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Calendar, Clock, MapPin, X } from 'lucide-react'
-import type { BookingWithRelations } from '@/types/booking'
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar } from '@/components/ui/Avatar';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Calendar, Clock, MapPin, X } from 'lucide-react';
+import type { BookingWithRelations } from '@/types/booking';
+import { BookingStatus } from '@/types/booking'; // Добавляем импорт
 
 interface ClientBookingsListProps {
-  bookings: BookingWithRelations[]
-  onCancelBooking: (bookingId: number) => Promise<void>
+  bookings: BookingWithRelations[];
+  onCancelBooking: (bookingId: number) => Promise<void>;
 }
 
 const STATUS_BADGES: Record<BookingStatus, { label: string; variant: 'default' | 'success' | 'destructive' | 'secondary' }> = {
   PENDING: { label: 'Ожидает', variant: 'default' },
   CONFIRMED: { label: 'Подтверждено', variant: 'success' },
   CANCELED: { label: 'Отменено', variant: 'destructive' },
-  COMPLETED: { label: 'Завершено', variant: 'secondary' }
-}
+  COMPLETED: { label: 'Завершено', variant: 'secondary' },
+};
 
 export function ClientBookingsList({
   bookings,
-  onCancelBooking
+  onCancelBooking,
 }: ClientBookingsListProps) {
-  const { toast } = useToast()
-  const [isCanceling, setIsCanceling] = useState<Record<number, boolean>>({})
+  const { toast } = useToast();
+  const [isCanceling, setIsCanceling] = useState<Record<number, boolean>>({});
 
   // Группируем записи по статусу и сортируем по дате
   const activeBookings = bookings
-    .filter(booking => ['PENDING', 'CONFIRMED'].includes(booking.status))
-    .sort((a, b) => new Date(a.bookingDateTime).getTime() - new Date(b.bookingDateTime).getTime())
+    .filter((booking) => ['PENDING', 'CONFIRMED'].includes(booking.status))
+    .sort((a, b) => new Date(a.bookingDateTime).getTime() - new Date(b.bookingDateTime).getTime());
 
   const pastBookings = bookings
-    .filter(booking => ['COMPLETED', 'CANCELED'].includes(booking.status))
-    .sort((a, b) => new Date(b.bookingDateTime).getTime() - new Date(a.bookingDateTime).getTime())
+    .filter((booking) => ['COMPLETED', 'CANCELED'].includes(booking.status))
+    .sort((a, b) => new Date(b.bookingDateTime).getTime() - new Date(a.bookingDateTime).getTime());
 
   const handleCancelBooking = async (bookingId: number) => {
-    setIsCanceling(prev => ({ ...prev, [bookingId]: true }))
+    setIsCanceling((prev) => ({ ...prev, [bookingId]: true }));
     
     try {
-      await onCancelBooking(bookingId)
+      await onCancelBooking(bookingId);
       toast({
         title: 'Запись отменена',
-        description: 'Ваша запись была успешно отменена'
-      })
+        description: 'Ваша запись была успешно отменена',
+      });
     } catch (error) {
       toast({
         title: 'Ошибка',
         description: 'Не удалось отменить запись',
-        variant: 'destructive'
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setIsCanceling(prev => ({ ...prev, [bookingId]: false }))
+      setIsCanceling((prev) => ({ ...prev, [bookingId]: false }));
     }
-  }
+  };
 
   const renderBookingCard = (booking: BookingWithRelations) => (
     <Card key={booking.id} className="mb-4">
@@ -146,7 +157,7 @@ export function ClientBookingsList({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   return (
     <div className="space-y-6">
@@ -175,5 +186,5 @@ export function ClientBookingsList({
         </Card>
       )}
     </div>
-  )
+  );
 }
