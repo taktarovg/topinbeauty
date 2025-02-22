@@ -1,36 +1,36 @@
-// src/components/bookings/BookingForm.tsx - update
-'use client'
+// src/components/bookings/BookingForm.tsx
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import { TimeSlots } from './TimeSlots'
-import { Button } from '@/components/ui/button'
-import { toast } from '@/components/ui/use-toast'
-import type { Service, MasterProfile } from '@prisma/client'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { TimeSlots } from './TimeSlots';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
+import type { Service, MasterProfile } from '@prisma/client';
 
 interface BookingFormProps {
   service: Service & {
     master: MasterProfile & {
       workSchedule?: {
-        workDays: Record<string, boolean>
-        workHours: { start: string; end: string }
-        breaks: Array<{ start: string; end: string }>
-      } | null
+        workDays: Record<string, boolean>;
+        workHours: { start: string; end: string };
+        breaks: Array<{ start: string; end: string }>;
+      } | null;
       settings?: {
-        bufferTime: number
-      } | null
-    }
-  }
+        bufferTime: number;
+      } | null;
+    };
+  };
 }
 
 export function BookingForm({ service }: BookingFormProps) {
-  const router = useRouter()
-  const [selectedDate, setSelectedDate] = useState<Date>()
-  const [selectedTime, setSelectedTime] = useState<string>()
-  const [existingBookings, setExistingBookings] = useState<Array<{ startTime: Date; endTime: Date }>>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState<string>();
+  const [existingBookings, setExistingBookings] = useState<Array<{ startTime: Date; endTime: Date }>>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -52,7 +52,7 @@ export function BookingForm({ service }: BookingFormProps) {
         toast({
           title: 'Ошибка',
           description: 'Не удалось загрузить существующие записи',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
     };
@@ -68,7 +68,7 @@ export function BookingForm({ service }: BookingFormProps) {
       console.log('Submitting booking:', {
         serviceId: service.id,
         date: selectedDate,
-        time: selectedTime
+        time: selectedTime,
       });
 
       const response = await fetch('/api/bookings', {
@@ -90,7 +90,7 @@ export function BookingForm({ service }: BookingFormProps) {
 
       toast({
         title: 'Успешно',
-        description: 'Запись создана'
+        description: 'Запись создана',
       });
 
       router.push('/bookings');
@@ -100,14 +100,13 @@ export function BookingForm({ service }: BookingFormProps) {
       toast({
         title: 'Ошибка',
         description: error instanceof Error ? error.message : 'Не удалось создать запись',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Добавляем логирование состояния мастера и расписания
   useEffect(() => {
     console.log('Service master:', service.master);
     console.log('Work schedule:', service.master.workSchedule);
@@ -124,6 +123,7 @@ export function BookingForm({ service }: BookingFormProps) {
           
           <TimeSlots
             date={selectedDate}
+            serviceId={service.id} // Добавляем serviceId
             workSchedule={service.master.workSchedule}
             duration={service.duration}
             bufferTime={service.master.settings?.bufferTime || 15}
