@@ -1,164 +1,164 @@
-// src/components/schedule/ScheduleSettingsDialog.tsx - update
-'use client'
+// src/components/schedule/ScheduleSettingsDialog.tsx
+'use client';
 
-import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle,
   DialogDescription,
-  DialogFooter
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { X, Plus, Clock, AlertTriangle } from 'lucide-react'
-import { useToast } from '@/components/ui/use-toast'
-import type { DaySchedule, Break } from '@/types/schedule'
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { X, Plus, Clock, AlertTriangle } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import type { DaySchedule, Break } from '@/types/schedule';
 
 interface ScheduleSettingsDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  selectedDate: Date
-  onSave?: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedDate: Date;
+  onSave?: () => void;
 }
 
 interface MasterSettings {
-  bufferTime: number
-  cancelDeadline: number
-  autoConfirm: boolean
+  bufferTime: number;
+  cancelDeadline: number;
+  autoConfirm: boolean;
 }
 
 export function ScheduleSettingsDialog({ 
   open, 
   onOpenChange,
   selectedDate,
-  onSave
+  onSave,
 }: ScheduleSettingsDialogProps) {
-  const { toast } = useToast()
+  const { toast } = useToast();
   const [schedule, setSchedule] = useState<Partial<DaySchedule>>({
     workHours: { 
       start: '09:00', 
-      end: '18:00' 
+      end: '18:00',
     },
-    breaks: []
-  })
+    breaks: [],
+  });
   const [settings, setSettings] = useState<MasterSettings>({
     bufferTime: 15,
     cancelDeadline: 24,
-    autoConfirm: false
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasBookings, setHasBookings] = useState(false)
+    autoConfirm: false,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasBookings, setHasBookings] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [scheduleResponse, settingsResponse] = await Promise.all([
           fetch(`/api/master/schedule/${format(selectedDate, 'yyyy-MM-dd')}`),
-          fetch('/api/master/settings')
-        ])
+          fetch('/api/master/settings'),
+        ]);
 
         if (scheduleResponse.ok) {
-          const data = await scheduleResponse.json()
+          const data = await scheduleResponse.json();
           if (data.schedule) {
-            setSchedule(data.schedule)
+            setSchedule(data.schedule);
           }
-          setHasBookings(data.bookings?.length > 0)
+          setHasBookings(data.bookings?.length > 0);
         }
 
         if (settingsResponse.ok) {
-          const settingsData = await settingsResponse.json()
-          setSettings(settingsData)
+          const settingsData = await settingsResponse.json();
+          setSettings(settingsData);
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
         toast({
           title: "Ошибка",
           description: "Не удалось загрузить настройки",
-          variant: "destructive"
-        })
+          variant: "destructive",
+        });
       }
-    }
+    };
 
     if (open) {
-      fetchData()
+      fetchData();
     }
-  }, [open, selectedDate, toast])
+  }, [open, selectedDate, toast]);
 
   const handleSaveSchedule = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const scheduleResponse = await fetch(`/api/master/schedule/${format(selectedDate, 'yyyy-MM-dd')}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(schedule)
-      })
+        body: JSON.stringify(schedule),
+      });
 
       if (!scheduleResponse.ok) {
-        throw new Error('Failed to save schedule')
+        throw new Error('Failed to save schedule');
       }
 
       const settingsResponse = await fetch('/api/master/settings', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(settings)
-      })
+        body: JSON.stringify(settings),
+      });
 
       if (!settingsResponse.ok) {
-        throw new Error('Failed to save settings')
+        throw new Error('Failed to save settings');
       }
 
       toast({
         title: 'Успешно',
-        description: 'Расписание и настройки сохранены'
-      })
+        description: 'Расписание и настройки сохранены',
+      });
 
-      onSave?.()
-      onOpenChange(false)
+      onSave?.();
+      onOpenChange(false);
     } catch (error) {
-      console.error('Save error:', error)
+      console.error('Save error:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось сохранить настройки',
-        variant: 'destructive'
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const addBreak = () => {
     setSchedule(prev => ({
       ...prev,
-      breaks: [...(prev.breaks || []), { start: '13:00', end: '14:00' }]
-    }))
-  }
+      breaks: [...(prev.breaks || []), { start: '13:00', end: '14:00' }],
+    }));
+  };
 
   const removeBreak = (index: number) => {
     setSchedule(prev => ({
       ...prev,
-      breaks: prev.breaks?.filter((_, i) => i !== index)
-    }))
-  }
+      breaks: prev.breaks?.filter((_, i) => i !== index),
+    }));
+  };
 
   const updateBreak = (index: number, type: 'start' | 'end', value: string) => {
     setSchedule(prev => {
-      const newBreaks = [...(prev.breaks || [])]
-      newBreaks[index] = { ...newBreaks[index], [type]: value }
-      return { ...prev, breaks: newBreaks }
-    })
-  }
+      const newBreaks = [...(prev.breaks || [])];
+      newBreaks[index] = { ...newBreaks[index], [type]: value };
+      return { ...prev, breaks: newBreaks };
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -197,7 +197,10 @@ export function ScheduleSettingsDialog({
                   value={schedule.workHours?.start}
                   onChange={(e) => setSchedule(prev => ({
                     ...prev,
-                    workHours: { ...(prev.workHours || {}), start: e.target.value }
+                    workHours: { 
+                      start: e.target.value,
+                      end: prev.workHours?.end || '18:00', // Значение по умолчанию для end
+                    },
                   }))}
                 />
               </div>
@@ -209,7 +212,10 @@ export function ScheduleSettingsDialog({
                   value={schedule.workHours?.end}
                   onChange={(e) => setSchedule(prev => ({
                     ...prev,
-                    workHours: { ...(prev.workHours || {}), end: e.target.value }
+                    workHours: { 
+                      start: prev.workHours?.start || '09:00', // Значение по умолчанию для start
+                      end: e.target.value,
+                    },
                   }))}
                 />
               </div>
@@ -276,7 +282,7 @@ export function ScheduleSettingsDialog({
                   value={settings.bufferTime}
                   onChange={(e) => setSettings(prev => ({
                     ...prev,
-                    bufferTime: parseInt(e.target.value)
+                    bufferTime: parseInt(e.target.value),
                   }))}
                 />
               </div>
@@ -290,7 +296,7 @@ export function ScheduleSettingsDialog({
                   value={settings.cancelDeadline}
                   onChange={(e) => setSettings(prev => ({
                     ...prev,
-                    cancelDeadline: parseInt(e.target.value)
+                    cancelDeadline: parseInt(e.target.value),
                   }))}
                 />
               </div>
@@ -301,7 +307,7 @@ export function ScheduleSettingsDialog({
                 checked={settings.autoConfirm}
                 onCheckedChange={(checked) => setSettings(prev => ({
                   ...prev,
-                  autoConfirm: checked
+                  autoConfirm: checked,
                 }))}
               />
               <Label htmlFor="autoConfirm">
@@ -328,5 +334,5 @@ export function ScheduleSettingsDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
