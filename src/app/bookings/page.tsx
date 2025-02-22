@@ -36,6 +36,7 @@ export default async function BookingsPage() {
             include: {
               user: {
                 select: {
+                  telegramId: true, // Добавили telegramId для соответствия BookingWithRelations
                   firstName: true,
                   lastName: true,
                   avatar: true,
@@ -57,7 +58,7 @@ export default async function BookingsPage() {
       },
       user: {
         select: {
-          telegramId: true, // Добавили telegramId для соответствия BookingWithRelations
+          telegramId: true,
           firstName: true,
           lastName: true,
           avatar: true,
@@ -67,6 +68,7 @@ export default async function BookingsPage() {
         include: {
           user: {
             select: {
+              telegramId: true, // Добавили telegramId для согласованности
               firstName: true,
               lastName: true,
               avatar: true,
