@@ -3,8 +3,11 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { ClientBookingsList } from '@/components/bookings/ClientBookingsList';
-import { cookies } from 'next/headers'; // Для доступа к cookies
-import { NextRequest } from 'next/server'; // Добавили импорт NextRequest
+import { cookies } from 'next/headers';
+import { NextRequest } from 'next/server';
+
+// Импортируем тип BookingWithRelations для явной типизации
+import type { BookingWithRelations } from '@/types/booking';
 
 export default async function BookingsPage() {
   // Создаем заглушки для NextRequest, используя cookies
@@ -22,7 +25,7 @@ export default async function BookingsPage() {
     redirect('/login');
   }
 
-  const bookings = await prisma.booking.findMany({
+  const bookings: BookingWithRelations[] = await prisma.booking.findMany({
     where: {
       userId: session.user.id,
     },
@@ -38,8 +41,16 @@ export default async function BookingsPage() {
                   avatar: true,
                 },
               },
-              city: true,
-              district: true,
+              city: {
+                select: {
+                  name: true,
+                },
+              },
+              district: {
+                select: {
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -49,6 +60,27 @@ export default async function BookingsPage() {
           firstName: true,
           lastName: true,
           avatar: true,
+        },
+      },
+      master: {
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+          city: {
+            select: {
+              name: true,
+            },
+          },
+          district: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
