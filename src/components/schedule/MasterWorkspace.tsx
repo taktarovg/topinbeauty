@@ -58,7 +58,7 @@ export function MasterWorkspace() {
       // Группируем записи по дням
       const bookingsByDay = monthBookings.reduce(
         (acc: Record<string, BookingWithRelations[]>, booking: BookingWithRelations) => {
-          const date = format(parseISO(booking.bookingDateTime), 'yyyy-MM-dd');
+          const date = format(booking.bookingDateTime, 'yyyy-MM-dd'); // Убрано parseISO
           if (!acc[date]) acc[date] = [];
           acc[date].push(booking);
           return acc;
