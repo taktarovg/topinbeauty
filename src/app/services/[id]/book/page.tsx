@@ -6,8 +6,8 @@ import { CreateBookingForm } from '@/components/bookings/CreateBookingForm';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
-import { cookies } from 'next/headers'; // Добавляем импорт cookies
-import { NextRequest } from 'next/server'; // Добавляем импорт NextRequest
+import { cookies } from 'next/headers';
+import { NextRequest } from 'next/server';
 
 interface BookingPageProps {
   params: {
@@ -16,7 +16,6 @@ interface BookingPageProps {
 }
 
 export default async function BookingPage({ params }: BookingPageProps) {
-  // Создаем объект request с использованием cookies
   const cookieStore = cookies();
   const token = cookieStore.get('sessionToken')?.value;
   const request = {
@@ -26,7 +25,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
   } as NextRequest;
 
   const session = await getSession(request);
-  if (!session?.user) { // Обновляем проверку на session.user
+  if (!session?.user) {
     redirect('/login');
   }
 
@@ -47,7 +46,6 @@ export default async function BookingPage({ params }: BookingPageProps) {
           city: true,
           district: true,
           settings: true,
-          // Получаем расписание на ближайшие 30 дней
           daySchedules: {
             where: {
               date: {
@@ -68,7 +66,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
     redirect('/services');
   }
 
-  // Получаем существующие записи для проверки доступности времени
+  // Получаем существующие записи для проверки доступности времени (оставлено для возможного использования)
   const existingBookings = await prisma.booking.findMany({
     where: {
       AND: [
@@ -91,7 +89,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
     },
   });
 
-  // Преобразуем записи в формат, необходимый для компонента
+  // Преобразуем записи в формат (оставлено для возможного использования)
   const bookingTimes = existingBookings.map((booking) => ({
     startTime: new Date(booking.bookingDateTime),
     endTime: new Date(
@@ -112,10 +110,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
 
       <h1 className="text-2xl font-bold mb-6">Запись на услугу</h1>
 
-      <CreateBookingForm
-        service={service}
-        existingBookings={bookingTimes}
-      />
+      <CreateBookingForm service={service} />
     </div>
   );
 }
