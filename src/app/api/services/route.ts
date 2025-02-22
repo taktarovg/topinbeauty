@@ -25,12 +25,15 @@ const createServiceSchema = z.object({
   image: z.string().nullable(),
 });
 
-export async function POST(request: NextRequest) { // Обновили тип с Request на NextRequest
+export async function POST(request: NextRequest) {
   try {
     console.log('Starting service creation...');
-    const session = await getSession(request); // Передаем request в getSession
+    const session = await getSession(request);
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     const rawData = await request.json();
@@ -45,7 +48,7 @@ export async function POST(request: NextRequest) { // Обновили тип с
         userId: session.user.id,
       },
       include: {
-        workSchedule: true,
+        daySchedules: true, // Исправили workSchedule на daySchedules
         settings: true,
       },
     });
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) { // Обновили тип с
           },
         },
         include: {
-          workSchedule: true,
+          daySchedules: true, // Исправили workSchedule на daySchedules
           settings: true,
         },
       });
