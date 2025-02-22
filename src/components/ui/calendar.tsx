@@ -1,18 +1,21 @@
-// src/components/ui/calendar.tsx - update
-"use client"
+// src/components/ui/calendar.tsx
+"use client";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
-import { ru } from "date-fns/locale"
-import { cn } from "@/lib/utils"
-import { isSameDay } from "date-fns"
+import * as React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DayPicker } from "react-day-picker";
+import { ru } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { isSameDay } from "date-fns";
 
 export interface CalendarProps extends React.ComponentProps<typeof DayPicker> {
-  availableDates?: Date[]
-  scheduledDays?: Date[]
-  bookedDays?: Date[]
-  fullyBookedDays?: Date[]
+  availableDates?: Date[];
+  scheduledDays?: Date[];
+  bookedDays?: Date[];
+  fullyBookedDays?: Date[];
+  selected?: Date | undefined; // Добавлено
+  onSelect?: (date: Date | undefined) => void; // Добавлено
+  fromDate?: Date; // Добавлено
 }
 
 function Calendar({
@@ -25,6 +28,8 @@ function Calendar({
   fullyBookedDays = [],
   disabled,
   selected,
+  onSelect,
+  fromDate,
   ...props
 }: CalendarProps) {
   // Создаем модификаторы для разных состояний дней
@@ -37,52 +42,52 @@ function Calendar({
       // День недоступен если:
       // 1. Явно отключен через пропс disabled
       if (typeof disabled === 'function' && disabled(date)) {
-        return true
+        return true;
       }
       // 2. Это прошедший день
       if (date < new Date(new Date().setHours(0, 0, 0, 0))) {
-        return true
+        return true;
       }
       // 3. День не отмечен как доступный (если список доступных дней предоставлен)
       if (availableDates.length > 0 && !availableDates.some(d => isSameDay(d, date))) {
-        return true
+        return true;
       }
       // 4. День полностью забронирован
       if (fullyBookedDays.some(d => isSameDay(d, date))) {
-        return true
+        return true;
       }
-      return false
-    }
-  }
+      return false;
+    },
+  };
 
   // Стили для модификаторов
   const modifiersStyles = {
     available: {
       backgroundColor: '#f0fdf4',
       color: '#166534',
-      fontWeight: '500'
+      fontWeight: '500',
     },
     scheduled: {
       backgroundColor: '#dcfce7',
-      color: '#166534'
+      color: '#166534',
     },
     booked: {
       backgroundColor: '#22c55e',
-      color: 'white'
+      color: 'white',
     },
     fullyBooked: {
       backgroundColor: '#fb923c',
-      color: 'white'
+      color: 'white',
     },
     today: {
-      fontWeight: '600'
+      fontWeight: '600',
     },
     selected: {
       backgroundColor: '#3b82f6 !important',
       color: 'white !important',
-      fontWeight: '600'
-    }
-  }
+      fontWeight: '600',
+    },
+  };
 
   return (
     <DayPicker
@@ -125,17 +130,19 @@ function Calendar({
       }}
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-        IconRight: () => <ChevronRight className="h-4 w-4" />
+        IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
       modifiers={modifiers}
       modifiersStyles={modifiersStyles}
       selected={selected}
+      onSelect={onSelect}
+      fromDate={fromDate}
       disabled={modifiers.disabled}
       {...props}
     />
-  )
+  );
 }
 
-Calendar.displayName = "Calendar"
+Calendar.displayName = "Calendar";
 
-export { Calendar }
+export { Calendar };
