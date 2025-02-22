@@ -1,15 +1,14 @@
-// // src/types/booking.ts - update
-// import { type Booking, type Service, type User, type MasterProfile, BookingStatus } from '@prisma/client'
-
-// export interface BookingWithRelations extends Booking {
-//   service: Service
-//   user: User
-//   master: MasterProfile
-// }
-
-// src/types/booking.ts// src/types/booking.ts
+// src/types/booking.ts
 import { Booking, User, Service, MasterProfile } from '@prisma/client';
 import { z } from 'zod';
+
+// Определяем перечисление BookingStatus
+export enum BookingStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELED = 'CANCELED',
+  COMPLETED = 'COMPLETED',
+}
 
 // Схема валидации для создания бронирования
 export const bookingSchema = z.object({
@@ -17,7 +16,7 @@ export const bookingSchema = z.object({
   serviceId: z.number().int().positive(),
   masterId: z.number().int().positive(),
   bookingDateTime: z.string().datetime(),
-  status: z.enum(['PENDING', 'CONFIRMED', 'CANCELED', 'COMPLETED']).optional().default('PENDING'),
+  status: z.nativeEnum(BookingStatus).optional().default(BookingStatus.PENDING), // Обновили на nativeEnum
   cancelDeadline: z.string().datetime(), // Добавляем обязательное поле
   notes: z.string().optional().nullable(),
 });
