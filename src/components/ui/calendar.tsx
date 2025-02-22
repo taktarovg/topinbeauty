@@ -17,8 +17,9 @@ export interface CalendarProps extends React.ComponentProps<typeof DayPicker> {
   onSelect?: (date: Date | undefined) => void;
   fromDate?: Date;
   disabled?: ((date: Date) => boolean) | Date[] | undefined;
-  modifiers?: { [key: string]: Date[] }; // Добавлено
-  modifiersStyles?: { [key: string]: React.CSSProperties }; // Добавлено
+  modifiers?: { [key: string]: Date[] };
+  modifiersStyles?: { [key: string]: React.CSSProperties };
+  className?: string; // Добавлено
 }
 
 function Calendar({
