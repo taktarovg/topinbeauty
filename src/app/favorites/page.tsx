@@ -1,20 +1,46 @@
 // src/app/favorites/page.tsx
 'use client'
 
-import { useState } from 'react'
-import { ServiceCard } from '@/components/services/ServiceCard'
-import { Button } from '@/components/ui/button'
-import { useFavorites } from '@/hooks/useFavorites'
+import { useState } from 'react';
+import { ServiceCard } from '@/components/services/ServiceCard';
+import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/hooks/useFavorites';
+
+// Определяем тип для элементов favorites на основе структуры данных
+interface FavoriteItem {
+  id: number;
+  title: string;
+  price: number;
+  duration: string;
+  master: {
+    name: string;
+    isPremium: boolean;
+    avatar: string | null;
+  };
+  category: {
+    parent: string | null;
+    name: string;
+  };
+  location: {
+    city: string;
+    district: string;
+  };
+  stats: {
+    views: number;
+    favorites: number;
+  };
+  image: string | null;
+}
 
 export default function FavoritesPage() {
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
   const {
     favorites,
     isLoading,
     hasNextPage,
     fetchNextPage,
-    isFetchingNextPage
-  } = useFavorites({ sortBy })
+    isFetchingNextPage,
+  } = useFavorites({ sortBy });
 
   // Если загрузка не завершена, показываем сообщение
   if (isLoading) {
@@ -24,7 +50,7 @@ export default function FavoritesPage() {
           <p className="text-gray-500">Загрузка избранного...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Если нет избранных услуг, показываем сообщение
@@ -35,7 +61,7 @@ export default function FavoritesPage() {
           <p className="text-gray-500">У вас пока нет избранных услуг</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -58,7 +84,7 @@ export default function FavoritesPage() {
       </div>
 
       <div className="p-2 space-y-4">
-        {favorites.map((favorite) => (
+        {favorites.map((favorite: FavoriteItem) => (
           <ServiceCard
             key={favorite.id}
             id={favorite.id}
@@ -75,7 +101,7 @@ export default function FavoritesPage() {
 
         {hasNextPage && (
           <div className="py-4 text-center">
-            <Button 
+            <Button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
               variant="outline"
@@ -86,5 +112,5 @@ export default function FavoritesPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
