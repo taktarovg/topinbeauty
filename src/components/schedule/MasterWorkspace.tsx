@@ -1,156 +1,156 @@
-// src/components/schedule/MasterWorkspace.tsx - update
-'use client'
+// src/components/schedule/MasterWorkspace.tsx
+'use client';
 
-import { useState, useEffect, useCallback } from 'react'
-import { format, addDays, subDays, parseISO, isSameDay } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import { Calendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { ScheduleSettingsDialog } from './ScheduleSettingsDialog'
-import { useToast } from '@/components/ui/use-toast'
-import { Badge } from '@/components/ui/badge'
-import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge'
-import { useQueryClient } from '@tanstack/react-query'
-import type { BookingWithRelations } from '@/types/booking'
+import { useState, useEffect, useCallback } from 'react';
+import { format, addDays, subDays, parseISO, isSameDay } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ScheduleSettingsDialog } from './ScheduleSettingsDialog';
+import { useToast } from '@/components/ui/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
+import { useQueryClient } from '@tanstack/react-query';
+import type { BookingWithRelations } from '@/types/booking';
 
 export function MasterWorkspace() {
-  const { toast } = useToast()
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [bookings, setBookings] = useState<BookingWithRelations[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [scheduledDays, setScheduledDays] = useState<Date[]>([])
-  const [bookedDays, setBookedDays] = useState<Date[]>([])
-  const [fullyBookedDays, setFullyBookedDays] = useState<Date[]>([])
-  const queryClient = useQueryClient()
+  const { toast } = useToast();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [bookings, setBookings] = useState<BookingWithRelations[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [scheduledDays, setScheduledDays] = useState<Date[]>([]);
+  const [bookedDays, setBookedDays] = useState<Date[]>([]);
+  const [fullyBookedDays, setFullyBookedDays] = useState<Date[]>([]);
+  const queryClient = useQueryClient();
 
   const fetchMonthData = async () => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       console.log('=== Fetching Month Data ===');
-      const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-      const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)
+      const monthStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
 
       // Получаем все записи за месяц
-      const response = await fetch(`/api/master/bookings?start=${format(monthStart, 'yyyy-MM-dd')}&end=${format(monthEnd, 'yyyy-MM-dd')}`)
-      if (!response.ok) throw new Error('Failed to fetch month data')
+      const response = await fetch(`/api/master/bookings?start=${format(monthStart, 'yyyy-MM-dd')}&end=${format(monthEnd, 'yyyy-MM-dd')}`);
+      if (!response.ok) throw new Error('Failed to fetch month data');
       
-      const data = await response.json()
-      const monthBookings = data.bookings || []
+      const data = await response.json();
+      const monthBookings = data.bookings || [];
 
       // Получаем расписание на месяц
-      const scheduleResponse = await fetch(`/api/master/schedule?month=${format(selectedDate, 'yyyy-MM')}`)
-      if (!scheduleResponse.ok) throw new Error('Failed to fetch schedule data')
+      const scheduleResponse = await fetch(`/api/master/schedule?month=${format(selectedDate, 'yyyy-MM')}`);
+      if (!scheduleResponse.ok) throw new Error('Failed to fetch schedule data');
       
-      const scheduleData = await scheduleResponse.json()
-      const schedules = scheduleData.schedules || []
+      const scheduleData = await scheduleResponse.json();
+      const schedules = scheduleData.schedules || [];
 
       console.log('Fetched data:', {
         bookings: monthBookings.length,
-        schedules: schedules.length
+        schedules: schedules.length,
       });
 
       // Обновляем состояние записей
-      setBookings(monthBookings)
+      setBookings(monthBookings);
 
       // Группируем записи по дням
-      const bookingsByDay = monthBookings.reduce((acc, booking) => {
-        const date = format(parseISO(booking.bookingDateTime), 'yyyy-MM-dd')
-        if (!acc[date]) acc[date] = []
-        acc[date].push(booking)
-        return acc
-      }, {} as Record<string, BookingWithRelations[]>)
+      const bookingsByDay = monthBookings.reduce((acc: Record<string, BookingWithRelations[]>, booking) => {
+        const date = format(parseISO(booking.bookingDateTime), 'yyyy-MM-dd');
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(booking);
+        return acc;
+      }, {} as Record<string, BookingWithRelations[]>);
 
       // Определяем статусы дней
-      const scheduled: Date[] = []
-      const booked: Date[] = []
-      const fullyBooked: Date[] = []
+      const scheduled: Date[] = [];
+      const booked: Date[] = [];
+      const fullyBooked: Date[] = [];
 
       schedules.forEach(schedule => {
-        const date = parseISO(schedule.date)
-        scheduled.push(date)
+        const date = parseISO(schedule.date);
+        scheduled.push(date);
 
-        const dayBookings = bookingsByDay[format(date, 'yyyy-MM-dd')] || []
+        const dayBookings = bookingsByDay[format(date, 'yyyy-MM-dd')] || [];
         if (dayBookings.length > 0) {
           // Вычисляем возможные слоты
-          const workHours = schedule.workHours as { start: string; end: string }
-          const [startHour, startMinute] = workHours.start.split(':').map(Number)
-          const [endHour, endMinute] = workHours.end.split(':').map(Number)
-          const totalMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute)
-          const possibleSlots = Math.floor(totalMinutes / 60) // Предполагаем средний слот 1 час
+          const workHours = schedule.workHours as { start: string; end: string };
+          const [startHour, startMinute] = workHours.start.split(':').map(Number);
+          const [endHour, endMinute] = workHours.end.split(':').map(Number);
+          const totalMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+          const possibleSlots = Math.floor(totalMinutes / 60); // Предполагаем средний слот 1 час
 
           if (dayBookings.length >= possibleSlots) {
-            fullyBooked.push(date)
+            fullyBooked.push(date);
           } else {
-            booked.push(date)
+            booked.push(date);
           }
         }
-      })
+      });
 
-      setScheduledDays(scheduled)
-      setBookedDays(booked)
-      setFullyBookedDays(fullyBooked)
+      setScheduledDays(scheduled);
+      setBookedDays(booked);
+      setFullyBookedDays(fullyBooked);
 
       console.log('Updated calendar states:', {
         scheduled: scheduled.length,
         booked: booked.length,
-        fullyBooked: fullyBooked.length
+        fullyBooked: fullyBooked.length,
       });
       console.log('=== Month Data Fetch Complete ===');
     } catch (error) {
-      console.error('Month data fetch error:', error)
+      console.error('Month data fetch error:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось загрузить данные за месяц',
-        variant: 'destructive'
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const refreshData = useCallback(async () => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       console.log('=== Refreshing Data ===');
       
       // Инвалидируем все связанные запросы
       await Promise.all([
         queryClient.invalidateQueries(['schedule']),
         queryClient.invalidateQueries(['available-dates']),
-        queryClient.invalidateQueries(['bookings'])
-      ])
+        queryClient.invalidateQueries(['bookings']),
+      ]);
 
       // Перезагружаем данные
-      await fetchMonthData()
+      await fetchMonthData();
       
       console.log('=== Data Refresh Complete ===');
     } catch (error) {
-      console.error('Data refresh error:', error)
+      console.error('Data refresh error:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [queryClient])
+  }, [queryClient]);
 
   // Загружаем данные при монтировании и смене месяца
   useEffect(() => {
-    fetchMonthData()
-  }, [selectedDate])
+    fetchMonthData();
+  }, [selectedDate]);
 
   // Обновляем данные каждые 30 секунд
   useEffect(() => {
-    const interval = setInterval(refreshData, 30000)
-    return () => clearInterval(interval)
-  }, [refreshData])
+    const interval = setInterval(refreshData, 30000);
+    return () => clearInterval(interval);
+  }, [refreshData]);
 
   const selectedDayBookings = bookings
     .filter(booking => isSameDay(parseISO(booking.bookingDateTime.toString()), selectedDate))
     .sort((a, b) => 
       parseISO(a.bookingDateTime.toString()).getTime() - 
       parseISO(b.bookingDateTime.toString()).getTime()
-    )
+    );
 
   return (
     <div className="max-w-lg mx-auto space-y-4 p-4">
@@ -172,23 +172,23 @@ export function MasterWorkspace() {
             modifiers={{
               booked: bookedDays,
               scheduled: scheduledDays,
-              fullyBooked: fullyBookedDays
+              fullyBooked: fullyBookedDays,
             }}
             modifiersStyles={{
               scheduled: {
                 backgroundColor: '#dcfce7',
-                color: '#166534'
+                color: '#166534',
               },
               booked: {
                 backgroundColor: '#059669',
                 color: 'white',
-                fontWeight: '600'
+                fontWeight: '600',
               },
               fullyBooked: {
                 backgroundColor: '#dc2626',
                 color: 'white',
-                fontWeight: '600'
-              }
+                fontWeight: '600',
+              },
             }}
           />
         </CardContent>
@@ -278,10 +278,10 @@ export function MasterWorkspace() {
         onOpenChange={setIsSettingsOpen}
         selectedDate={selectedDate}
         onSave={async () => {
-          setIsSettingsOpen(false)
-          await refreshData()
+          setIsSettingsOpen(false);
+          await refreshData();
         }}
       />
     </div>
-  )
+  );
 }
