@@ -1,92 +1,103 @@
-// src/components/bookings/BookingForm.tsx
+// src/components/bookings/CreateBookingForm.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
 import { TimeSlots } from './TimeSlots';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import type { Service, MasterProfile } from '@prisma/client';
 
-interface BookingFormProps {
+interface CreateBookingFormProps {
   service: Service & {
-    master: MasterProfile & {
-      workSchedule?: {
-        workDays: Record<string, boolean>;
-        workHours: { start: string; end: string };
-        breaks: Array<{ start: string; end: string }>;
-      } | null;
-      settings?: {
-        bufferTime: number;
-      } | null;
-    };
+    master: MasterProfile;
   };
 }
 
-export function BookingForm({ service }: BookingFormProps) {
+export function CreateBookingForm({ service }: CreateBookingFormProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>();
-  const [existingBookings, setExistingBookings] = useState<Array<{ startTime: Date; endTime: Date }>>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      if (!selectedDate) return;
-
+    const fetchAvailableDates = async () => {
       try {
-        const date = format(selectedDate, 'yyyy-MM-dd');
-        const response = await fetch(`/api/master/bookings?date=${date}&masterId=${service.masterId}`);
-        
+        console.log('=== CreateBookingForm: Fetching Available Dates ===');
+        console.log('Service ID:', service.id);
+        console.log('Master ID:', service.master.id);
+
+        const response = await fetch(`/api/services/${service.id}/available-dates`);
+        console.log('Fetch response status:', response.status);
+
         if (!response.ok) {
-          throw new Error('Failed to fetch bookings');
+          const errorData = await response.json();
+          console.error('API Error Response:', errorData);
+          throw new Error('Failed to fetch available dates');
         }
 
-        const bookings = await response.json();
-        console.log('Fetched bookings:', bookings);
-        setExistingBookings(bookings);
+        const data = await response.json();
+        console.log('API Response Data:', data);
+        
+        const dates = data.dates.map((dateStr: string) => {
+          const parsedDate = parseISO(dateStr);
+          console.log('Parsing date:', dateStr, 'to:', parsedDate);
+          return parsedDate;
+        });
+
+        console.log('Final available dates:', dates);
+        setAvailableDates(dates);
+        console.log('=== End Fetching Available Dates ===');
       } catch (error) {
-        console.error('Error fetching bookings:', error);
+        console.error('Error in fetchAvailableDates:', error);
         toast({
           title: 'Ошибка',
-          description: 'Не удалось загрузить существующие записи',
+          description: 'Не удалось загрузить доступные даты',
           variant: 'destructive',
         });
       }
     };
 
-    fetchBookings();
-  }, [selectedDate, service.masterId]);
+    fetchAvailableDates();
+  }, [service.id, service.master.id, toast]);
 
   const handleSubmit = async () => {
     if (!selectedDate || !selectedTime) return;
 
     setIsLoading(true);
     try {
-      console.log('Submitting booking:', {
+      console.log('=== CreateBookingForm: Creating Booking ===');
+      const bookingData = {
         serviceId: service.id,
-        date: selectedDate,
+        date: format(selectedDate, 'yyyy-MM-dd'),
         time: selectedTime,
-      });
+      };
+      console.log('Booking data:', bookingData);
 
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          serviceId: service.id,
-          date: format(selectedDate, 'yyyy-MM-dd'),
-          time: selectedTime,
-        }),
+        body: JSON.stringify(bookingData),
       });
 
+      console.log('Booking response status:', response.status);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create booking');
+        const errorData = await response.json();
+        console.error('Booking API Error:', errorData);
+        throw new Error(errorData.message || 'Failed to create booking');
       }
+
+      const result = await response.json();
+      console.log('Booking success response:', result);
 
       toast({
         title: 'Успешно',
@@ -94,9 +105,8 @@ export function BookingForm({ service }: BookingFormProps) {
       });
 
       router.push('/bookings');
-      router.refresh();
     } catch (error) {
-      console.error('Booking error:', error);
+      console.error('Error in handleSubmit:', error);
       toast({
         title: 'Ошибка',
         description: error instanceof Error ? error.message : 'Не удалось создать запись',
@@ -104,40 +114,83 @@ export function BookingForm({ service }: BookingFormProps) {
       });
     } finally {
       setIsLoading(false);
+      console.log('=== End Creating Booking ===');
     }
   };
 
-  useEffect(() => {
-    console.log('Service master:', service.master);
-    console.log('Work schedule:', service.master.workSchedule);
-    console.log('Master settings:', service.master.settings);
-  }, [service.master]);
+  const handleDateSelect = (date: Date | undefined) => {
+    console.log('=== Date Selection ===');
+    console.log('Selected date:', date);
+    console.log('Available dates:', availableDates);
+    if (date) {
+      const isAvailable = availableDates.some((availableDate) =>
+        format(availableDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+      );
+      console.log('Is date available:', isAvailable);
+    }
+    setSelectedDate(date);
+    setSelectedTime(undefined); // Сбрасываем выбранное время при смене даты
+    console.log('=== End Date Selection ===');
+  };
 
   return (
     <div className="space-y-6">
-      {selectedDate && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">
-            Выберите время на {format(selectedDate, 'd MMMM yyyy', { locale: ru })}
-          </h3>
-          
-          <TimeSlots
-            date={selectedDate}
-            serviceId={service.id} // Добавляем serviceId
-            workSchedule={service.master.workSchedule}
-            duration={service.duration}
-            bufferTime={service.master.settings?.bufferTime || 15}
-            selectedTime={selectedTime}
-            onSelect={setSelectedTime}
-            existingBookings={existingBookings}
+      <Card>
+        <CardHeader>
+          <CardTitle>Выберите дату</CardTitle>
+          <CardDescription>
+            Выберите удобный день для записи
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Calendar
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            fromDate={new Date()}
+            disabled={(date) => {
+              const dateStr = format(date, 'yyyy-MM-dd');
+              const isAvailable = availableDates.some((d) =>
+                format(d, 'yyyy-MM-dd') === dateStr
+              );
+              return !isAvailable;
+            }}
+            modifiers={{
+              available: availableDates,
+            }}
+            modifiersStyles={{
+              available: {
+                backgroundColor: '#f0fdf4',
+                color: '#166534',
+                fontWeight: '500',
+              },
+            }}
+            className="rounded-md border"
           />
-        </div>
+        </CardContent>
+      </Card>
+
+      {selectedDate && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Выберите время</CardTitle>
+            <CardDescription>
+              {format(selectedDate, 'd MMMM yyyy', { locale: ru })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TimeSlots
+              date={selectedDate}
+              serviceId={service.id}
+              selectedTime={selectedTime}
+              onSelect={setSelectedTime}
+            />
+          </CardContent>
+        </Card>
       )}
 
-      <Button 
+      <Button
         onClick={handleSubmit}
         className="w-full"
-        variant="default"
         disabled={!selectedDate || !selectedTime || isLoading}
       >
         {isLoading ? 'Создание записи...' : 'Записаться'}
