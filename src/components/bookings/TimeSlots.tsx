@@ -30,7 +30,7 @@ export function TimeSlots({
   selectedTime,
   onSelect,
   className,
-  workSchedule, // Принимаем workSchedule
+  workSchedule,
   duration,
   bufferTime,
   existingBookings,
@@ -116,7 +116,7 @@ export function TimeSlots({
 
   return (
     <div className={cn("grid grid-cols-4 gap-2", className)}>
-      {slots.map((slot: TimeSlot, index) => {
+      {slots.map((slot: TimeSlot, index: number) => { // Явно указан тип index как number
         console.log('Rendering slot:', slot);
         return (
           <Button
