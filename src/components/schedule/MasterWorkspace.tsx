@@ -56,12 +56,15 @@ export function MasterWorkspace() {
       setBookings(monthBookings);
 
       // Группируем записи по дням
-      const bookingsByDay = monthBookings.reduce((acc: Record<string, BookingWithRelations[]>, booking) => {
-        const date = format(parseISO(booking.bookingDateTime), 'yyyy-MM-dd');
-        if (!acc[date]) acc[date] = [];
-        acc[date].push(booking);
-        return acc;
-      }, {} as Record<string, BookingWithRelations[]>);
+      const bookingsByDay = monthBookings.reduce(
+        (acc: Record<string, BookingWithRelations[]>, booking: BookingWithRelations) => {
+          const date = format(parseISO(booking.bookingDateTime), 'yyyy-MM-dd');
+          if (!acc[date]) acc[date] = [];
+          acc[date].push(booking);
+          return acc;
+        },
+        {} as Record<string, BookingWithRelations[]>
+      );
 
       // Определяем статусы дней
       const scheduled: Date[] = [];
@@ -164,7 +167,6 @@ export function MasterWorkspace() {
       <Card>
         <CardContent className="p-4">
           <Calendar
-            mode="single"
             selected={selectedDate}
             onSelect={(date) => date && setSelectedDate(date)}
             className="w-full"
