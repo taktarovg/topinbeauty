@@ -1,15 +1,15 @@
-// src/components/layout/Navigation.tsx - update
-'use client'
+// src/components/layout/Navigation.tsx
+'use client';
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, Heart, Calendar, UserCircle, CalendarClock } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useAuthContext } from '@/providers/AuthProvider'
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, Heart, Calendar, UserCircle, CalendarClock } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuthContext } from '@/providers/AuthProvider';
 
 export function Navigation() {
-  const pathname = usePathname()
-  const { user } = useAuthContext()
+  const pathname = usePathname();
+  const { user } = useAuthContext();
 
   const items = [
     {
@@ -37,7 +37,7 @@ export function Navigation() {
         href: '/master/schedule',
         label: 'Ко мне',
         icon: CalendarClock,
-      }
+      },
     ] : []),
     {
       id: 'profile',
@@ -45,14 +45,16 @@ export function Navigation() {
       label: 'Профиль',
       icon: UserCircle,
     },
-  ]
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">
       <div className="max-w-[800px] mx-auto">
         <div className="flex justify-around items-center h-14">
           {items.map(({ id, href, label, icon: Icon }) => {
-            const isActive = pathname === href || pathname.startsWith(`${href}/`)
+            const isActive = pathname
+              ? pathname === href || pathname.startsWith(`${href}/`)
+              : false; // Проверка на null
             return (
               <Link
                 key={id}
@@ -67,10 +69,10 @@ export function Navigation() {
                 <Icon className="h-6 w-6" />
                 <span className="text-xs mt-0.5">{label}</span>
               </Link>
-            )
+            );
           })}
         </div>
       </div>
     </nav>
-  )
+  );
 }
