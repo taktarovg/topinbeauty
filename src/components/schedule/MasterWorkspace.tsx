@@ -15,6 +15,13 @@ import { BookingStatusBadge } from '@/components/bookings/BookingStatusBadge';
 import { useQueryClient } from '@tanstack/react-query';
 import type { BookingWithRelations } from '@/types/booking';
 
+// Тип для объекта расписания
+type Schedule = {
+  date: string;
+  workHours: { start: string; end: string };
+  // Добавьте другие поля, если они есть в API
+};
+
 export function MasterWorkspace() {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -45,7 +52,7 @@ export function MasterWorkspace() {
       if (!scheduleResponse.ok) throw new Error('Failed to fetch schedule data');
       
       const scheduleData = await scheduleResponse.json();
-      const schedules = scheduleData.schedules || [];
+      const schedules: Schedule[] = scheduleData.schedules || [];
 
       console.log('Fetched data:', {
         bookings: monthBookings.length,
@@ -58,7 +65,7 @@ export function MasterWorkspace() {
       // Группируем записи по дням
       const bookingsByDay = monthBookings.reduce(
         (acc: Record<string, BookingWithRelations[]>, booking: BookingWithRelations) => {
-          const date = format(booking.bookingDateTime, 'yyyy-MM-dd'); // Убрано parseISO
+          const date = format(booking.bookingDateTime, 'yyyy-MM-dd');
           if (!acc[date]) acc[date] = [];
           acc[date].push(booking);
           return acc;
@@ -71,7 +78,7 @@ export function MasterWorkspace() {
       const booked: Date[] = [];
       const fullyBooked: Date[] = [];
 
-      schedules.forEach(schedule => {
+      schedules.forEach((schedule: Schedule) => {
         const date = parseISO(schedule.date);
         scheduled.push(date);
 
