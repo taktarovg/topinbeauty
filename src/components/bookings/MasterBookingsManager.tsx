@@ -1,22 +1,22 @@
-// src/components/bookings/MasterBookingsManager.tsx - update
-'use client'
+// src/components/bookings/MasterBookingsManager.tsx
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { format, parseISO, isSameDay } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { format, parseISO, isSameDay } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import { 
   Card, 
   CardContent, 
   CardHeader, 
   CardTitle,
   CardDescription 
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/use-toast'
-import { Calendar } from '@/components/ui/calendar'
-import { Avatar } from '@/components/ui/Avatar'
-import { BookingStatusBadge, getStatusVariant } from './BookingStatusBadge'
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { Calendar } from '@/components/ui/calendar';
+import { Avatar } from '@/components/ui/Avatar';
+import { BookingStatusBadge } from './BookingStatusBadge';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -27,101 +27,101 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle,
   AlertDialogTrigger 
-} from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
-import { Check, X, CheckCircle, Clock, Calendar as CalendarIcon } from 'lucide-react'
-import type { BookingWithRelations } from '@/types/booking'
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Check, X, CheckCircle, Clock } from 'lucide-react';
+import type { BookingWithRelations } from '@/types/booking';
 
 interface MasterBookingsManagerProps {
-  initialBookings?: BookingWithRelations[]
+  initialBookings?: BookingWithRelations[];
 }
 
 export function MasterBookingsManager({ initialBookings = [] }: MasterBookingsManagerProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [bookings, setBookings] = useState<BookingWithRelations[]>(initialBookings)
-  const [isLoading, setIsLoading] = useState(false)
-  const [workingDays, setWorkingDays] = useState<Date[]>([])
-  const [bookingDays, setBookingDays] = useState<Date[]>([])
+  const router = useRouter();
+  const { toast } = useToast();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [bookings, setBookings] = useState<BookingWithRelations[]>(initialBookings);
+  const [isLoading, setIsLoading] = useState(false);
+  const [workingDays, setWorkingDays] = useState<Date[]>([]);
+  const [bookingDays, setBookingDays] = useState<Date[]>([]);
 
   // Загрузка расписания и записей
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true)
-        const response = await fetch(`/api/master/schedule/${format(selectedDate, 'yyyy-MM-dd')}`)
+        setIsLoading(true);
+        const response = await fetch(`/api/master/schedule/${format(selectedDate, 'yyyy-MM-dd')}`);
         
         if (!response.ok) {
-          throw new Error('Failed to fetch schedule data')
+          throw new Error('Failed to fetch schedule data');
         }
 
-        const data = await response.json()
+        const data = await response.json();
         
-        setBookings(data.bookings || [])
+        setBookings(data.bookings || []);
         
         // Обновляем календарь
         if (data.schedule) {
-          setWorkingDays(prev => [...prev, parseISO(data.schedule.date)])
+          setWorkingDays(prev => [...prev, parseISO(data.schedule.date)]);
         }
         if (data.bookings?.length > 0) {
-          setBookingDays(prev => [...prev, selectedDate])
+          setBookingDays(prev => [...prev, selectedDate]);
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data:', error);
         toast({
           title: 'Ошибка',
           description: 'Не удалось загрузить данные',
-          variant: 'destructive'
-        })
+          variant: 'destructive',
+        });
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [selectedDate, toast])
+    fetchData();
+  }, [selectedDate, toast]);
 
   // Обновление статуса записи
   const handleStatusUpdate = async (bookingId: number, newStatus: 'CONFIRMED' | 'CANCELED' | 'COMPLETED') => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const response = await fetch(`/api/master/bookings/${bookingId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus })
-      })
+        body: JSON.stringify({ status: newStatus }),
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to update booking status')
+        throw new Error('Failed to update booking status');
       }
 
-      const updatedBooking = await response.json()
+      const updatedBooking = await response.json();
 
       // Обновляем локальное состояние
       setBookings(prevBookings => 
         prevBookings.map(booking => 
           booking.id === bookingId ? updatedBooking : booking
         )
-      )
+      );
 
       toast({
         title: 'Успешно',
         description: 'Статус записи обновлен',
-      })
+      });
     } catch (error) {
-      console.error('Status update error:', error)
+      console.error('Status update error:', error);
       toast({
         title: 'Ошибка',
         description: 'Не удалось обновить статус',
-        variant: 'destructive'
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Фильтруем записи для выбранного дня
   const selectedDayBookings = bookings.filter(booking =>
@@ -129,15 +129,15 @@ export function MasterBookingsManager({ initialBookings = [] }: MasterBookingsMa
   ).sort((a, b) => 
     parseISO(a.bookingDateTime.toString()).getTime() - 
     parseISO(b.bookingDateTime.toString()).getTime()
-  )
+  );
 
   // Статистика по записям
   const bookingsStats = {
     total: selectedDayBookings.length,
     confirmed: selectedDayBookings.filter(b => b.status === 'CONFIRMED').length,
     pending: selectedDayBookings.filter(b => b.status === 'PENDING').length,
-    canceled: selectedDayBookings.filter(b => b.status === 'CANCELED').length
-  }
+    canceled: selectedDayBookings.filter(b => b.status === 'CANCELED').length,
+  };
 
   return (
     <div className="space-y-6">
@@ -150,24 +150,23 @@ export function MasterBookingsManager({ initialBookings = [] }: MasterBookingsMa
         </CardHeader>
         <CardContent>
           <Calendar
-            mode="single"
             selected={selectedDate}
             onSelect={(date) => date && setSelectedDate(date)}
             className="rounded-md border"
             fromDate={new Date()}
             modifiers={{
               working: workingDays,
-              booked: bookingDays
+              booked: bookingDays,
             }}
             modifiersStyles={{
               working: {
                 backgroundColor: '#f0fdf4',
-                color: '#166534'
+                color: '#166534',
               },
               booked: {
                 fontWeight: 'bold',
-                color: '#059669'
-              }
+                color: '#059669',
+              },
             }}
           />
         </CardContent>
@@ -296,5 +295,5 @@ export function MasterBookingsManager({ initialBookings = [] }: MasterBookingsMa
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
