@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { ClientBookingsList } from '@/components/bookings/ClientBookingsList';
-import { cookies } from 'next/headers'; // Импортируем cookies для доступа к заголовкам
+import { cookies } from 'next/headers'; // Для доступа к cookies
+import { NextRequest } from 'next/server'; // Добавили импорт NextRequest
 
 export default async function BookingsPage() {
   // Создаем заглушки для NextRequest, используя cookies
@@ -17,7 +18,7 @@ export default async function BookingsPage() {
 
   const session = await getSession(request);
 
-  if (!session?.user) { // Обновили проверку для session.user
+  if (!session?.user) {
     redirect('/login');
   }
 
