@@ -1,5 +1,5 @@
 // src/types/booking.ts
-import { Booking, User, Service, MasterProfile } from '@prisma/client';
+import { Booking, User, Service, MasterProfile, City, District } from '@prisma/client';
 import { z } from 'zod';
 
 // Определяем перечисление BookingStatus
@@ -16,8 +16,8 @@ export const bookingSchema = z.object({
   serviceId: z.number().int().positive(),
   masterId: z.number().int().positive(),
   bookingDateTime: z.string().datetime(),
-  status: z.nativeEnum(BookingStatus).optional().default(BookingStatus.PENDING), // Обновили на nativeEnum
-  cancelDeadline: z.string().datetime(), // Добавляем обязательное поле
+  status: z.nativeEnum(BookingStatus).optional().default(BookingStatus.PENDING),
+  cancelDeadline: z.string().datetime(),
   notes: z.string().optional().nullable(),
 });
 
@@ -27,7 +27,12 @@ export type BookingWithRelations = Booking & {
   service: Service & {
     master: MasterProfile & {
       user: Pick<User, 'telegramId' | 'firstName' | 'lastName'>;
+      city: Pick<City, 'id' | 'name'>; // Добавляем city
+      district: Pick<District, 'id' | 'name'>; // Добавляем district
     };
   };
-  master: MasterProfile;
+  master: MasterProfile & {
+    city: Pick<City, 'id' | 'name'>; // Добавляем city
+    district: Pick<District, 'id' | 'name'>; // Добавляем district
+  };
 };

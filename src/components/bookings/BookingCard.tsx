@@ -1,12 +1,11 @@
-// src/components/bookings/BookingCard.tsx - new
-
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import { Clock, MapPin, Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Avatar } from '@/components/ui/Avatar'
-import { BookingStatusBadge } from './BookingStatusBadge'
+// src/components/bookings/BookingCard.tsx
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { Clock, MapPin, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar } from '@/components/ui/Avatar';
+import { BookingStatusBadge } from './BookingStatusBadge';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -17,17 +16,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import type { BookingWithRelations } from '@/types/booking'
+} from '@/components/ui/alert-dialog';
+import type { BookingWithRelations } from '@/types/booking';
 
 interface BookingCardProps {
-  booking: BookingWithRelations
-  onCancel: (id: number) => Promise<void>
+  booking: BookingWithRelations;
+  onCancel: (id: number) => Promise<void>;
 }
 
 export function BookingCard({ booking, onCancel }: BookingCardProps) {
-  const bookingDate = new Date(booking.bookingDateTime)
-  const canCancel = ['PENDING', 'CONFIRMED'].includes(booking.status)
+  const bookingDate = new Date(booking.bookingDateTime);
+  const canCancel = ['PENDING', 'CONFIRMED'].includes(booking.status);
 
   return (
     <Card>
@@ -55,7 +54,8 @@ export function BookingCard({ booking, onCancel }: BookingCardProps) {
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 <span>
-                  {booking.service.master.city.name}, {booking.service.master.district.name}
+                  {booking.service.master.city?.name || 'Не указан город'},{' '}
+                  {booking.service.master.district?.name || 'Не указан район'}
                 </span>
               </div>
             </div>
@@ -110,5 +110,5 @@ export function BookingCard({ booking, onCancel }: BookingCardProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
