@@ -1,28 +1,38 @@
-// src/app/services/[id]/book/page.tsx - update
-
-import { redirect } from 'next/navigation'
-import { getSession } from '@/lib/session'
-import { prisma } from '@/lib/prisma'
-import { CreateBookingForm } from '@/components/bookings/CreateBookingForm'
-import { ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
-import { addDays, startOfDay, endOfDay } from 'date-fns'
+// src/app/services/[id]/book/page.tsx
+import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/session';
+import { prisma } from '@/lib/prisma';
+import { CreateBookingForm } from '@/components/bookings/CreateBookingForm';
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import { addDays, startOfDay, endOfDay } from 'date-fns';
+import { cookies } from 'next/headers'; // Добавляем импорт cookies
+import { NextRequest } from 'next/server'; // Добавляем импорт NextRequest
 
 interface BookingPageProps {
   params: {
-    id: string
-  }
+    id: string;
+  };
 }
 
 export default async function BookingPage({ params }: BookingPageProps) {
-  const session = await getSession()
-  if (!session) {
-    redirect('/login')
+  // Создаем объект request с использованием cookies
+  const cookieStore = cookies();
+  const token = cookieStore.get('sessionToken')?.value;
+  const request = {
+    headers: new Headers({
+      'Authorization': token ? `Bearer ${token}` : '',
+    }),
+  } as NextRequest;
+
+  const session = await getSession(request);
+  if (!session?.user) { // Обновляем проверку на session.user
+    redirect('/login');
   }
 
   const service = await prisma.service.findUnique({
     where: { 
-      id: parseInt(params.id) 
+      id: parseInt(params.id),
     },
     include: {
       master: {
@@ -31,8 +41,8 @@ export default async function BookingPage({ params }: BookingPageProps) {
             select: {
               firstName: true,
               lastName: true,
-              avatar: true
-            }
+              avatar: true,
+            },
           },
           city: true,
           district: true,
@@ -42,20 +52,20 @@ export default async function BookingPage({ params }: BookingPageProps) {
             where: {
               date: {
                 gte: startOfDay(new Date()),
-                lte: endOfDay(addDays(new Date(), 30))
-              }
+                lte: endOfDay(addDays(new Date(), 30)),
+              },
             },
             orderBy: {
-              date: 'asc'
-            }
-          }
-        }
-      }
-    }
-  })
+              date: 'asc',
+            },
+          },
+        },
+      },
+    },
+  });
 
   if (!service) {
-    redirect('/services')
+    redirect('/services');
   }
 
   // Получаем существующие записи для проверки доступности времени
@@ -63,32 +73,32 @@ export default async function BookingPage({ params }: BookingPageProps) {
     where: {
       AND: [
         { masterId: service.master.id },
-        { status: { in: ['PENDING', 'CONFIRMED'] }},
+        { status: { in: ['PENDING', 'CONFIRMED'] } },
         {
           bookingDateTime: {
-            gte: startOfDay(new Date())
-          }
-        }
-      ]
+            gte: startOfDay(new Date()),
+          },
+        },
+      ],
     },
     select: {
       bookingDateTime: true,
       service: {
         select: {
-          duration: true
-        }
-      }
-    }
-  })
+          duration: true,
+        },
+      },
+    },
+  });
 
   // Преобразуем записи в формат, необходимый для компонента
-  const bookingTimes = existingBookings.map(booking => ({
+  const bookingTimes = existingBookings.map((booking) => ({
     startTime: new Date(booking.bookingDateTime),
     endTime: new Date(
       new Date(booking.bookingDateTime).getTime() + 
       (booking.service.duration + (service.master.settings?.bufferTime || 15)) * 60000
-    )
-  }))
+    ),
+  }));
 
   return (
     <div className="container max-w-2xl mx-auto p-4">
@@ -107,5 +117,5 @@ export default async function BookingPage({ params }: BookingPageProps) {
         existingBookings={bookingTimes}
       />
     </div>
-  )
+  );
 }
