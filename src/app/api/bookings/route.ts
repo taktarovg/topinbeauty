@@ -11,10 +11,12 @@ export async function POST(request: Request) {
 
     const booking = await prisma.booking.create({
       data: {
-        ...validatedData,
-        userId: validatedData.userId,
         serviceId: validatedData.serviceId,
-        masterId: validatedData.masterId,
+        userId: validatedData.userId, // Теперь обязательное поле
+        masterId: validatedData.masterId, // Теперь обязательное поле
+        bookingDateTime: new Date(`${validatedData.date}T${validatedData.time}:00`),
+        status: validatedData.status || 'PENDING',
+        notes: validatedData.notes,
       },
       include: {
         user: {
@@ -22,6 +24,7 @@ export async function POST(request: Request) {
             telegramId: true,
             firstName: true,
             lastName: true,
+            avatar: true,
           },
         },
         service: {
@@ -59,7 +62,7 @@ export async function POST(request: Request) {
                 telegramId: true,
                 firstName: true,
                 lastName: true,
-                avatar: true, // Добавляем user с avatar
+                avatar: true,
               },
             },
             city: {
