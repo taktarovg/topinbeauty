@@ -1,20 +1,29 @@
-// src/app/bookings/page.tsx - new
-
-import { redirect } from 'next/navigation'
-import { getSession } from '@/lib/session'
-import { prisma } from '@/lib/prisma'
-import { ClientBookingsList } from '@/components/bookings/ClientBookingsList'
+// src/app/bookings/page.tsx
+import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/session';
+import { prisma } from '@/lib/prisma';
+import { ClientBookingsList } from '@/components/bookings/ClientBookingsList';
+import { cookies } from 'next/headers'; // Импортируем cookies для доступа к заголовкам
 
 export default async function BookingsPage() {
-  const session = await getSession()
+  // Создаем заглушки для NextRequest, используя cookies
+  const cookieStore = cookies();
+  const token = cookieStore.get('sessionToken')?.value;
+  const request = {
+    headers: new Headers({
+      'Authorization': token ? `Bearer ${token}` : '',
+    }),
+  } as NextRequest;
 
-  if (!session) {
-    redirect('/login')
+  const session = await getSession(request);
+
+  if (!session?.user) { // Обновили проверку для session.user
+    redirect('/login');
   }
 
   const bookings = await prisma.booking.findMany({
     where: {
-      userId: session.user.id
+      userId: session.user.id,
     },
     include: {
       service: {
@@ -25,28 +34,28 @@ export default async function BookingsPage() {
                 select: {
                   firstName: true,
                   lastName: true,
-                  avatar: true
-                }
+                  avatar: true,
+                },
               },
               city: true,
-              district: true
-            }
-          }
-        }
+              district: true,
+            },
+          },
+        },
       },
       user: {
         select: {
           firstName: true,
           lastName: true,
-          avatar: true
-        }
-      }
+          avatar: true,
+        },
+      },
     },
     orderBy: [
       { status: 'asc' },
-      { bookingDateTime: 'asc' }
-    ]
-  })
+      { bookingDateTime: 'asc' },
+    ],
+  });
 
   return (
     <div className="container max-w-2xl mx-auto p-4">
@@ -60,18 +69,18 @@ export default async function BookingsPage() {
       <ClientBookingsList
         bookings={bookings}
         onCancelBooking={async (bookingId: number) => {
-          'use server'
+          'use server';
           try {
             await prisma.booking.update({
               where: { id: bookingId },
-              data: { status: 'CANCELED' }
-            })
+              data: { status: 'CANCELED' },
+            });
           } catch (error) {
-            console.error('Failed to cancel booking:', error)
-            throw new Error('Failed to cancel booking')
+            console.error('Failed to cancel booking:', error);
+            throw new Error('Failed to cancel booking');
           }
         }}
       />
     </div>
-  )
+  );
 }
