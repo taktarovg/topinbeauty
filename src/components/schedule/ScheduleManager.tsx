@@ -1,22 +1,22 @@
-// src/components/schedule/ScheduleManager.tsx - update
-'use client'
+// src/components/schedule/ScheduleManager.tsx
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useToast } from '@/components/ui/use-toast'
-import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
-import type { WorkSchedule, MasterSettings, DayOfWeek } from '@/types/schedule'
-import { DAYS_OF_WEEK } from '@/types/schedule'
+import { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import type { WorkSchedule, MasterSettings, DayOfWeek } from '@/types/schedule';
+import { DAYS_OF_WEEK } from '@/types/schedule';
 
 interface ScheduleManagerProps {
-  initialSchedule?: WorkSchedule
-  initialSettings?: MasterSettings
-  onSave: (data: { schedule: WorkSchedule; settings: MasterSettings }) => Promise<void>
+  initialSchedule?: WorkSchedule;
+  initialSettings?: MasterSettings;
+  onSave: (data: { schedule: WorkSchedule; settings: MasterSettings }) => Promise<void>;
 }
 
 export function ScheduleManager({ 
@@ -24,30 +24,36 @@ export function ScheduleManager({
   initialSettings,
   onSave 
 }: ScheduleManagerProps) {
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   
   const [schedule, setSchedule] = useState<WorkSchedule>(initialSchedule || {
     workDays: { '1': true, '2': true, '3': true, '4': true, '5': true, '6': false, '7': false },
     workHours: { start: '09:00', end: '18:00' },
-    breaks: [] // Инициализируем пустым массивом
-  })
+    breaks: [],
+  });
 
-  const [settings, setSettings] = useState<MasterSettings>(initialSettings || {
-    bufferTime: 15,
-    cancelDeadline: 24,
-    autoConfirm: false
-  })
+  const [settings, setSettings] = useState<MasterSettings>(
+    initialSettings || {
+      id: 0, // Временное значение, будет заменено реальным из initialSettings
+      masterId: 0, // Временное значение, будет заменено реальным из initialSettings
+      bufferTime: 15,
+      cancelDeadline: 24,
+      autoConfirm: false,
+      createdAt: new Date(), // Временное значение
+      updatedAt: new Date(), // Временное значение
+    }
+  );
 
   const handleDayToggle = (day: DayOfWeek) => {
     setSchedule(prev => ({
       ...prev,
       workDays: {
         ...prev.workDays,
-        [day]: !prev.workDays[day]
-      }
-    }))
-  }
+        [day]: !prev.workDays[day],
+      },
+    }));
+  };
 
   const handleWorkHoursChange = (
     type: 'start' | 'end',
@@ -57,57 +63,57 @@ export function ScheduleManager({
       ...prev,
       workHours: {
         ...prev.workHours,
-        [type]: value
-      }
-    }))
-  }
+        [type]: value,
+      },
+    }));
+  };
 
   const addBreak = () => {
     setSchedule(prev => ({
       ...prev,
       breaks: [
-        ...(prev.breaks || []), // Проверяем на undefined
-        { start: '13:00', end: '14:00' }
-      ]
-    }))
-  }
+        ...(prev.breaks || []),
+        { start: '13:00', end: '14:00' },
+      ],
+    }));
+  };
 
   const updateBreak = (index: number, type: 'start' | 'end', value: string) => {
     setSchedule(prev => ({
       ...prev,
       breaks: prev.breaks?.map((brk, i) => 
         i === index ? { ...brk, [type]: value } : brk
-      ) || []
-    }))
-  }
+      ) || [],
+    }));
+  };
 
   const removeBreak = (index: number) => {
     setSchedule(prev => ({
       ...prev,
-      breaks: prev.breaks?.filter((_, i) => i !== index) || []
-    }))
-  }
+      breaks: prev.breaks?.filter((_, i) => i !== index) || [],
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
-      await onSave({ schedule, settings })
+      await onSave({ schedule, settings });
       toast({
         title: 'Успешно',
-        description: 'Расписание и настройки сохранены'
-      })
+        description: 'Расписание и настройки сохранены',
+      });
     } catch (error) {
       toast({
         title: 'Ошибка',
         description: 'Не удалось сохранить расписание',
-        variant: 'destructive'
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -226,7 +232,7 @@ export function ScheduleManager({
                   value={settings.bufferTime}
                   onChange={e => setSettings(prev => ({
                     ...prev,
-                    bufferTime: parseInt(e.target.value)
+                    bufferTime: parseInt(e.target.value),
                   }))}
                 />
               </div>
@@ -240,7 +246,7 @@ export function ScheduleManager({
                   value={settings.cancelDeadline}
                   onChange={e => setSettings(prev => ({
                     ...prev,
-                    cancelDeadline: parseInt(e.target.value)
+                    cancelDeadline: parseInt(e.target.value),
                   }))}
                 />
               </div>
@@ -254,7 +260,7 @@ export function ScheduleManager({
                 checked={settings.autoConfirm}
                 onCheckedChange={checked => setSettings(prev => ({
                   ...prev,
-                  autoConfirm: checked
+                  autoConfirm: checked,
                 }))}
               />
               <Label htmlFor="autoConfirm">
@@ -271,5 +277,5 @@ export function ScheduleManager({
         </Button>
       </div>
     </form>
-  )
+  );
 }
