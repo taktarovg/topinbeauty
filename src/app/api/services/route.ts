@@ -81,18 +81,10 @@ export async function POST(request: NextRequest) {
           bio: '',
           address: validatedData.address,
           isVerified: false,
-          // Создаем базовое расписание
-          workSchedule: {
+          // Создаем базовое расписание с правильной структурой DaySchedule
+          daySchedules: {
             create: {
-              workDays: {
-                "1": true,
-                "2": true,
-                "3": true,
-                "4": true,
-                "5": true,
-                "6": false,
-                "7": false,
-              },
+              date: new Date(), // Добавляем обязательное поле date (можно настроить)
               workHours: {
                 start: "09:00",
                 end: "18:00",
