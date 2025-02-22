@@ -26,13 +26,14 @@ export type BookingWithRelations = Booking & {
   user: Pick<User, 'telegramId' | 'firstName' | 'lastName'>;
   service: Service & {
     master: MasterProfile & {
-      user: Pick<User, 'telegramId' | 'firstName' | 'lastName'>;
-      city: Pick<City, 'id' | 'name'>; // Добавляем city
-      district: Pick<District, 'id' | 'name'>; // Добавляем district
+      user: Pick<User, 'telegramId' | 'firstName' | 'lastName' | 'avatar'>; // Добавляем avatar
+      city: Pick<City, 'id' | 'name'>;
+      district: Pick<District, 'id' | 'name'>;
     };
   };
   master: MasterProfile & {
-    city: Pick<City, 'id' | 'name'>; // Добавляем city
-    district: Pick<District, 'id' | 'name'>; // Добавляем district
+    city: Pick<City, 'id' | 'name'>;
+    district: Pick<District, 'id' | 'name'>;
+    user: Pick<User, 'telegramId' | 'firstName' | 'lastName' | 'avatar'>; // Добавляем avatar
   };
 };
