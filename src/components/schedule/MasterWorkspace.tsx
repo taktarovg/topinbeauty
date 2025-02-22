@@ -19,7 +19,6 @@ import type { BookingWithRelations } from '@/types/booking';
 type Schedule = {
   date: string;
   workHours: { start: string; end: string };
-  // Добавьте другие поля, если они есть в API
 };
 
 export function MasterWorkspace() {
@@ -128,9 +127,9 @@ export function MasterWorkspace() {
       
       // Инвалидируем все связанные запросы
       await Promise.all([
-        queryClient.invalidateQueries(['schedule']),
-        queryClient.invalidateQueries(['available-dates']),
-        queryClient.invalidateQueries(['bookings']),
+        queryClient.invalidateQueries({ queryKey: ['schedule'] }),
+        queryClient.invalidateQueries({ queryKey: ['available-dates'] }),
+        queryClient.invalidateQueries({ queryKey: ['bookings'] }),
       ]);
 
       // Перезагружаем данные
