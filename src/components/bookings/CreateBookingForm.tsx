@@ -1,30 +1,30 @@
-// src/components/bookings/CreateBookingForm.tsx - update
-'use client'
+// src/components/bookings/CreateBookingForm.tsx
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { format, parseISO } from 'date-fns'
-import { ru } from 'date-fns/locale'
-import { Calendar } from '@/components/ui/calendar'
-import { TimeSlots } from './TimeSlots'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/use-toast'
-import type { Service, MasterProfile } from '@prisma/client'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { format, parseISO } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { TimeSlots } from './TimeSlots';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import type { Service, MasterProfile } from '@prisma/client';
 
 interface CreateBookingFormProps {
   service: Service & {
-    master: MasterProfile
-  }
+    master: MasterProfile;
+  };
 }
 
 export function CreateBookingForm({ service }: CreateBookingFormProps) {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [selectedDate, setSelectedDate] = useState<Date>()
-  const [selectedTime, setSelectedTime] = useState<string>()
-  const [isLoading, setIsLoading] = useState(false)
-  const [availableDates, setAvailableDates] = useState<Date[]>([])
+  const router = useRouter();
+  const { toast } = useToast();
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
 
   useEffect(() => {
     const fetchAvailableDates = async () => {
@@ -33,19 +33,18 @@ export function CreateBookingForm({ service }: CreateBookingFormProps) {
         console.log('Service ID:', service.id);
         console.log('Master ID:', service.master.id);
 
-        const response = await fetch(`/api/services/${service.id}/available-dates`)
+        const response = await fetch(`/api/services/${service.id}/available-dates`);
         console.log('Fetch response status:', response.status);
 
         if (!response.ok) {
           const errorData = await response.json();
           console.error('API Error Response:', errorData);
-          throw new Error('Failed to fetch available dates')
+          throw new Error('Failed to fetch available dates');
         }
 
-        const data = await response.json()
+        const data = await response.json();
         console.log('API Response Data:', data);
         
-        // Преобразуем строки дат в объекты Date
         const dates = data.dates.map((dateStr: string) => {
           const parsedDate = parseISO(dateStr);
           console.log('Parsing date:', dateStr, 'to:', parsedDate);
@@ -53,48 +52,48 @@ export function CreateBookingForm({ service }: CreateBookingFormProps) {
         });
 
         console.log('Final available dates:', dates);
-        setAvailableDates(dates)
+        setAvailableDates(dates);
         console.log('=== End Fetching Available Dates ===');
       } catch (error) {
-        console.error('Error in fetchAvailableDates:', error)
+        console.error('Error in fetchAvailableDates:', error);
         toast({
           title: 'Ошибка',
           description: 'Не удалось загрузить доступные даты',
-          variant: 'destructive'
-        })
+          variant: 'destructive',
+        });
       }
-    }
+    };
 
-    fetchAvailableDates()
-  }, [service.id, service.master.id, toast])
+    fetchAvailableDates();
+  }, [service.id, service.master.id, toast]);
 
   const handleSubmit = async () => {
-    if (!selectedDate || !selectedTime) return
+    if (!selectedDate || !selectedTime) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       console.log('=== CreateBookingForm: Creating Booking ===');
       const bookingData = {
         serviceId: service.id,
         date: format(selectedDate, 'yyyy-MM-dd'),
-        time: selectedTime
+        time: selectedTime,
       };
       console.log('Booking data:', bookingData);
 
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(bookingData)
-      })
+        body: JSON.stringify(bookingData),
+      });
 
       console.log('Booking response status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Booking API Error:', errorData);
-        throw new Error(errorData.message || 'Failed to create booking')
+        throw new Error(errorData.message || 'Failed to create booking');
       }
 
       const result = await response.json();
@@ -102,29 +101,29 @@ export function CreateBookingForm({ service }: CreateBookingFormProps) {
 
       toast({
         title: 'Успешно',
-        description: 'Запись создана'
-      })
+        description: 'Запись создана',
+      });
 
-      router.push('/bookings')
+      router.push('/bookings');
     } catch (error) {
-      console.error('Error in handleSubmit:', error)
+      console.error('Error in handleSubmit:', error);
       toast({
         title: 'Ошибка',
         description: error instanceof Error ? error.message : 'Не удалось создать запись',
-        variant: 'destructive'
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log('=== End Creating Booking ===');
     }
-  }
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
     console.log('=== Date Selection ===');
     console.log('Selected date:', date);
     console.log('Available dates:', availableDates);
     if (date) {
-      const isAvailable = availableDates.some(availableDate => 
+      const isAvailable = availableDates.some((availableDate) =>
         format(availableDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
       );
       console.log('Is date available:', isAvailable);
@@ -132,7 +131,7 @@ export function CreateBookingForm({ service }: CreateBookingFormProps) {
     setSelectedDate(date);
     setSelectedTime(undefined); // Сбрасываем выбранное время при смене даты
     console.log('=== End Date Selection ===');
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -145,26 +144,25 @@ export function CreateBookingForm({ service }: CreateBookingFormProps) {
         </CardHeader>
         <CardContent>
           <Calendar
-            mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
             fromDate={new Date()}
             disabled={(date) => {
               const dateStr = format(date, 'yyyy-MM-dd');
-              const isAvailable = availableDates.some(d => 
+              const isAvailable = availableDates.some((d) =>
                 format(d, 'yyyy-MM-dd') === dateStr
               );
               return !isAvailable;
             }}
             modifiers={{
-              available: availableDates
+              available: availableDates,
             }}
             modifiersStyles={{
               available: {
                 backgroundColor: '#f0fdf4',
                 color: '#166534',
-                fontWeight: '500'
-              }
+                fontWeight: '500',
+              },
             }}
             className="rounded-md border"
           />
@@ -198,5 +196,5 @@ export function CreateBookingForm({ service }: CreateBookingFormProps) {
         {isLoading ? 'Создание записи...' : 'Записаться'}
       </Button>
     </div>
-  )
+  );
 }
