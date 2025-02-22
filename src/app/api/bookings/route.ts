@@ -12,9 +12,10 @@ export async function POST(request: Request) {
     const booking = await prisma.booking.create({
       data: {
         serviceId: validatedData.serviceId,
-        userId: validatedData.userId, // Теперь обязательное поле
-        masterId: validatedData.masterId, // Теперь обязательное поле
+        userId: validatedData.userId,
+        masterId: validatedData.masterId,
         bookingDateTime: new Date(`${validatedData.date}T${validatedData.time}:00`),
+        cancelDeadline: new Date(validatedData.cancelDeadline), // Добавлено
         status: validatedData.status || 'PENDING',
         notes: validatedData.notes,
       },

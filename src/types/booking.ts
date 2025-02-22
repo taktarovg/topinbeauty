@@ -34,10 +34,11 @@ export type TimeSlot = {
 // Схема валидации для создания бронирования
 export const bookingSchema = z.object({
   serviceId: z.number().positive('Service ID must be a positive number'),
-  userId: z.number().positive('User ID must be a positive number'), // Убрано .optional()
-  masterId: z.number().positive('Master ID must be a positive number'), // Убрано .optional()
+  userId: z.number().positive('User ID must be a positive number'),
+  masterId: z.number().positive('Master ID must be a positive number'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
   time: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'),
+  cancelDeadline: z.string().datetime({ message: 'Cancel deadline must be a valid ISO datetime' }), // Добавлено
   status: z.enum([BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.CANCELED, BookingStatus.COMPLETED]).default(BookingStatus.PENDING).optional(),
   notes: z.string().optional(),
 });
