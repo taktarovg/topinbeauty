@@ -1,15 +1,14 @@
 // src/app/layout.tsx
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import { AuthProvider } from '@/providers/AuthProvider'
-import { QueryProvider } from '@/providers/QueryProvider'
-import { Header } from '@/components/layout/Header'
-import { Navigation } from '@/components/layout/Navigation'
-import { Toaster } from '@/components/ui/toaster'
-import { SDKProvider } from '@telegram-apps/sdk-react'
-import './globals.css'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/providers/AuthProvider';
+import { QueryProvider } from '@/providers/QueryProvider';
+import { Header } from '@/components/layout/Header';
+import { Navigation } from '@/components/layout/Navigation';
+import { Toaster } from '@/components/ui/toaster';
+import './globals.css';
 
-const inter = Inter({ subsets: ['latin', 'cyrillic'] })
+const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
 export const metadata: Metadata = {
   title: 'TopInBeauty - Запись к мастерам красоты',
@@ -17,13 +16,12 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
-}
+};
 
-// src/app/layout.tsx
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="ru">
@@ -35,9 +33,7 @@ export default function RootLayout({
           <AuthProvider>
             <div className="flex min-h-screen flex-col bg-gray-50">
               <Header />
-              <main className="flex-1 pb-16">
-                {children}
-              </main>
+              <main className="flex-1 pb-16">{children}</main>
               <Navigation />
             </div>
             <Toaster />
@@ -45,5 +41,5 @@ export default function RootLayout({
         </QueryProvider>
       </body>
     </html>
-  )
+  );
 }
