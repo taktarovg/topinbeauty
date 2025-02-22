@@ -1,8 +1,6 @@
 // src/types/booking.ts
-import { Booking, User, Service, MasterProfile, City, District } from '@prisma/client';
-import { z } from 'zod';
+import type { Booking, Service, MasterProfile, User, City, District } from '@prisma/client';
 
-// Определяем перечисление BookingStatus
 export enum BookingStatus {
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
@@ -10,23 +8,11 @@ export enum BookingStatus {
   COMPLETED = 'COMPLETED',
 }
 
-// Схема валидации для создания бронирования
-export const bookingSchema = z.object({
-  userId: z.number().int().positive(),
-  serviceId: z.number().int().positive(),
-  masterId: z.number().int().positive(),
-  bookingDateTime: z.string().datetime(),
-  status: z.nativeEnum(BookingStatus).optional().default(BookingStatus.PENDING),
-  cancelDeadline: z.string().datetime(),
-  notes: z.string().optional().nullable(),
-});
-
-// Тип для бронирования с отношениями
 export type BookingWithRelations = Booking & {
-  user: Pick<User, 'telegramId' | 'firstName' | 'lastName'>;
+  user: Pick<User, 'telegramId' | 'firstName' | 'lastName' | 'avatar'>; // Добавлено 'avatar'
   service: Service & {
     master: MasterProfile & {
-      user: Pick<User, 'telegramId' | 'firstName' | 'lastName' | 'avatar'>; // Добавляем avatar
+      user: Pick<User, 'telegramId' | 'firstName' | 'lastName' | 'avatar'>;
       city: Pick<City, 'id' | 'name'>;
       district: Pick<District, 'id' | 'name'>;
     };
@@ -34,6 +20,12 @@ export type BookingWithRelations = Booking & {
   master: MasterProfile & {
     city: Pick<City, 'id' | 'name'>;
     district: Pick<District, 'id' | 'name'>;
-    user: Pick<User, 'telegramId' | 'firstName' | 'lastName' | 'avatar'>; // Добавляем avatar
+    user: Pick<User, 'telegramId' | 'firstName' | 'lastName' | 'avatar'>;
   };
+};
+
+export type TimeSlot = {
+  time: string;
+  isAvailable: boolean;
+  isPast: boolean;
 };
