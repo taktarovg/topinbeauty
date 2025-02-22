@@ -198,3 +198,5 @@ export function CreateBookingForm({ service }: CreateBookingFormProps) {
     </div>
   );
 }
+
+//тестовый коммент
