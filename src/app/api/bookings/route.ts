@@ -33,7 +33,7 @@ export async function POST(request: Request) {
                     telegramId: true,
                     firstName: true,
                     lastName: true,
-                    avatar: true, // Добавляем avatar
+                    avatar: true,
                   },
                 },
                 city: {
@@ -54,6 +54,14 @@ export async function POST(request: Request) {
         },
         master: {
           include: {
+            user: {
+              select: {
+                telegramId: true,
+                firstName: true,
+                lastName: true,
+                avatar: true, // Добавляем user с avatar
+              },
+            },
             city: {
               select: {
                 id: true,
