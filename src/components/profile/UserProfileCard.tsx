@@ -1,28 +1,28 @@
-// src/components/profile/UserProfileCard.tsx - update
-'use client'
+// src/components/profile/UserProfileCard.tsx
+'use client';
 
-import { User, City, District, MasterProfile, Service } from '@prisma/client'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Edit, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Avatar } from '@/components/ui/Avatar'
+import { User, City, District, MasterProfile, Service } from '@prisma/client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Edit, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/Avatar';
 
 interface UserProfileCardProps {
   user: User & {
-    city?: City | null
-    district?: District | null
+    city?: City | null;
+    district?: District | null;
     masterProfile?: (MasterProfile & {
-      services?: Service[]
-    }) | null
-  }
+      services?: Service[];
+    }) | null;
+  };
 }
 
 export function UserProfileCard({ user }: UserProfileCardProps) {
   const location = [
     user.city?.name,
-    user.district?.name
-  ].filter(Boolean).join(', ')
+    user.district?.name,
+  ].filter(Boolean).join(', ');
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
@@ -83,7 +83,7 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
 
             {/* Список услуг */}
             <div className="space-y-4">
-              {user.masterProfile.services && user.masterProfile.services.length > 0 ? (
+              {user.masterProfile.services?.length ? (
                 user.masterProfile.services.map((service) => (
                   <div key={service.id} className="flex items-start gap-4 border rounded-lg p-4">
                     {/* Аватар услуги */}
@@ -109,7 +109,7 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
                           <h3 className="font-medium">{service.name}</h3>
                           <p className="text-sm text-gray-600 mt-1">{service.description}</p>
                           <div className="flex items-center gap-4 mt-2">
-                            <span className="text-sm font-medium">{service.price} ₽</span>
+                            <span className="text-sm font-medium">{service.price.toString()} ₽</span>
                             <span className="text-sm text-gray-500">{service.duration} мин</span>
                           </div>
                         </div>
@@ -154,5 +154,5 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
         )}
       </div>
     </div>
-  )
+  );
 }
