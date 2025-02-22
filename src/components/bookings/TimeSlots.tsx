@@ -1,19 +1,27 @@
-// src/components/bookings/TimeSlots.tsx - update
-'use client'
+// src/components/bookings/TimeSlots.tsx
+'use client';
 
-import { format } from 'date-fns'
-import { useQuery } from '@tanstack/react-query'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/use-toast'
-import { cn } from '@/lib/utils'
-import type { TimeSlot } from '@/types/booking'
+import { format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
+import type { TimeSlot } from '@/types/booking';
 
 interface TimeSlotsProps {
-  date: Date
-  serviceId: number
-  selectedTime?: string
-  onSelect: (time: string) => void
-  className?: string
+  date: Date;
+  serviceId: number;
+  selectedTime?: string;
+  onSelect: (time: string) => void;
+  className?: string;
+  workSchedule?: { // Добавляем workSchedule
+    workDays: Record<string, boolean>;
+    workHours: { start: string; end: string };
+    breaks: Array<{ start: string; end: string }>;
+  } | null;
+  duration?: number; // Добавляем duration
+  bufferTime?: number; // Добавляем bufferTime
+  existingBookings?: Array<{ startTime: Date; endTime: Date }>; // Добавляем existingBookings
 }
 
 export function TimeSlots({
@@ -21,15 +29,19 @@ export function TimeSlots({
   serviceId,
   selectedTime,
   onSelect,
-  className
+  className,
+  workSchedule, // Принимаем workSchedule
+  duration,
+  bufferTime,
+  existingBookings,
 }: TimeSlotsProps) {
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const {
     data,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ['timeSlots', serviceId, format(date, 'yyyy-MM-dd')],
     queryFn: async () => {
@@ -39,32 +51,32 @@ export function TimeSlots({
 
       const response = await fetch(
         `/api/services/${serviceId}/time-slots?date=${format(date, 'yyyy-MM-dd')}`
-      )
-      
+      );
+
       console.log('Time slots response status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Time slots API error:', errorData);
-        throw new Error(errorData.message || 'Failed to fetch time slots')
+        throw new Error(errorData.message || 'Failed to fetch time slots');
       }
-      
+
       const data = await response.json();
       console.log('Time slots data:', data);
       console.log('=== End Fetching Time Slots ===');
       return data;
     },
     refetchInterval: 30000, // Обновляем каждые 30 секунд
-    refetchOnWindowFocus: true // Обновляем при фокусе окна
-  })
+    refetchOnWindowFocus: true, // Обновляем при фокусе окна
+  });
 
   if (error) {
     console.error('TimeSlots error:', error);
     toast({
       title: 'Ошибка',
       description: 'Не удалось загрузить доступное время',
-      variant: 'destructive'
-    })
+      variant: 'destructive',
+    });
   }
 
   if (isLoading) {
@@ -78,10 +90,10 @@ export function TimeSlots({
           />
         ))}
       </div>
-    )
+    );
   }
 
-  const slots = data?.slots || []
+  const slots = data?.slots || [];
   console.log('TimeSlots: Available slots:', slots);
 
   if (!slots.length) {
@@ -90,17 +102,17 @@ export function TimeSlots({
       <p className="text-center text-muted-foreground py-4">
         Нет доступного времени на этот день
       </p>
-    )
+    );
   }
 
   const handleSlotSelect = (time: string) => {
     console.log('=== TimeSlot Selection ===');
     console.log('Selected time:', time);
-    onSelect(time)
+    onSelect(time);
     // После выбора времени обновляем данные
     refetch();
     console.log('=== End TimeSlot Selection ===');
-  }
+  };
 
   return (
     <div className={cn("grid grid-cols-4 gap-2", className)}>
@@ -124,5 +136,5 @@ export function TimeSlots({
         );
       })}
     </div>
-  )
+  );
 }
