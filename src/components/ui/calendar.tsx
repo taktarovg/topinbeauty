@@ -16,7 +16,9 @@ export interface CalendarProps extends React.ComponentProps<typeof DayPicker> {
   selected?: Date | undefined;
   onSelect?: (date: Date | undefined) => void;
   fromDate?: Date;
-  disabled?: ((date: Date) => boolean) | Date[] | undefined; // Добавлено
+  disabled?: ((date: Date) => boolean) | Date[] | undefined;
+  modifiers?: { [key: string]: Date[] }; // Добавлено
+  modifiersStyles?: { [key: string]: React.CSSProperties }; // Добавлено
 }
 
 function Calendar({
@@ -31,10 +33,12 @@ function Calendar({
   selected,
   onSelect,
   fromDate,
+  modifiers = {},
+  modifiersStyles = {},
   ...props
 }: CalendarProps) {
   // Создаем модификаторы для разных состояний дней
-  const modifiers = {
+  const defaultModifiers = {
     available: availableDates,
     scheduled: scheduledDays,
     booked: bookedDays,
@@ -64,8 +68,11 @@ function Calendar({
     },
   };
 
+  // Объединяем дефолтные модификаторы с переданными через пропс
+  const combinedModifiers = { ...defaultModifiers, ...modifiers };
+
   // Стили для модификаторов
-  const modifiersStyles = {
+  const defaultModifiersStyles = {
     available: {
       backgroundColor: '#f0fdf4',
       color: '#166534',
@@ -92,6 +99,9 @@ function Calendar({
       fontWeight: '600',
     },
   };
+
+  // Объединяем дефолтные стили с переданными через пропс
+  const combinedModifiersStyles = { ...defaultModifiersStyles, ...modifiersStyles };
 
   return (
     <DayPicker
@@ -136,12 +146,12 @@ function Calendar({
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
-      modifiers={modifiers}
-      modifiersStyles={modifiersStyles}
+      modifiers={combinedModifiers}
+      modifiersStyles={combinedModifiersStyles}
       selected={selected}
       onSelect={onSelect}
       fromDate={fromDate}
-      disabled={modifiers.disabled}
+      disabled={combinedModifiers.disabled}
       {...props}
     />
   );
