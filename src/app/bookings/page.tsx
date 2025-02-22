@@ -5,12 +5,9 @@ import { prisma } from '@/lib/prisma';
 import { ClientBookingsList } from '@/components/bookings/ClientBookingsList';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
-
-// Импортируем тип BookingWithRelations для явной типизации
 import type { BookingWithRelations } from '@/types/booking';
 
 export default async function BookingsPage() {
-  // Создаем заглушки для NextRequest, используя cookies
   const cookieStore = cookies();
   const token = cookieStore.get('sessionToken')?.value;
   const request = {
@@ -36,7 +33,7 @@ export default async function BookingsPage() {
             include: {
               user: {
                 select: {
-                  telegramId: true, // Добавили telegramId для соответствия BookingWithRelations
+                  telegramId: true,
                   firstName: true,
                   lastName: true,
                   avatar: true,
@@ -44,11 +41,13 @@ export default async function BookingsPage() {
               },
               city: {
                 select: {
+                  id: true, // Добавляем id
                   name: true,
                 },
               },
               district: {
                 select: {
+                  id: true, // Добавляем id
                   name: true,
                 },
               },
@@ -68,7 +67,7 @@ export default async function BookingsPage() {
         include: {
           user: {
             select: {
-              telegramId: true, // Добавили telegramId для согласованности
+              telegramId: true,
               firstName: true,
               lastName: true,
               avatar: true,
@@ -76,11 +75,13 @@ export default async function BookingsPage() {
           },
           city: {
             select: {
+              id: true, // Добавляем id
               name: true,
             },
           },
           district: {
             select: {
+              id: true, // Добавляем id
               name: true,
             },
           },
