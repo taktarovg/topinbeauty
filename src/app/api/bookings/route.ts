@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendBookingNotification } from '@/lib/telegram';
-import { bookingSchema } from '@/types/booking'; // Предполагаемый импорт
+import { bookingSchema } from '@/types/booking';
 
 export async function POST(request: Request) {
   try {
@@ -35,11 +35,38 @@ export async function POST(request: Request) {
                     lastName: true,
                   },
                 },
+                city: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+                district: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
         },
-        master: true, // Добавляем master на верхний уровень
+        master: {
+          include: {
+            city: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            district: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
