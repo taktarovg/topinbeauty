@@ -13,9 +13,10 @@ export interface CalendarProps extends React.ComponentProps<typeof DayPicker> {
   scheduledDays?: Date[];
   bookedDays?: Date[];
   fullyBookedDays?: Date[];
-  selected?: Date | undefined; // Добавлено
-  onSelect?: (date: Date | undefined) => void; // Добавлено
-  fromDate?: Date; // Добавлено
+  selected?: Date | undefined;
+  onSelect?: (date: Date | undefined) => void;
+  fromDate?: Date;
+  disabled?: ((date: Date) => boolean) | Date[] | undefined; // Добавлено
 }
 
 function Calendar({
@@ -42,6 +43,9 @@ function Calendar({
       // День недоступен если:
       // 1. Явно отключен через пропс disabled
       if (typeof disabled === 'function' && disabled(date)) {
+        return true;
+      }
+      if (Array.isArray(disabled) && disabled.some(d => isSameDay(d, date))) {
         return true;
       }
       // 2. Это прошедший день
