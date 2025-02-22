@@ -33,6 +33,7 @@ export async function POST(request: Request) {
                     telegramId: true,
                     firstName: true,
                     lastName: true,
+                    avatar: true, // Добавляем avatar
                   },
                 },
                 city: {
