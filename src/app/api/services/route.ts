@@ -43,15 +43,17 @@ export async function POST(request: NextRequest) {
     console.log('Validated service data:', validatedData);
 
     // Проверяем, есть ли у пользователя профиль мастера
-    let masterProfile = await prisma.masterProfile.findUnique({
+    const existingMasterProfile = await prisma.masterProfile.findUnique({
       where: {
         userId: session.user.id,
       },
       include: {
-        daySchedules: true, // Исправили workSchedule на daySchedules
+        daySchedules: true,
         settings: true,
       },
     });
+
+    let masterProfile = existingMasterProfile;
 
     // Если профиля мастера нет, создаем его вместе с базовым расписанием
     if (!masterProfile) {
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
           },
         },
         include: {
-          daySchedules: true, // Исправили workSchedule на daySchedules
+          daySchedules: true,
           settings: true,
         },
       });
