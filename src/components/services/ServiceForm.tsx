@@ -27,15 +27,15 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
     price: initialData?.price || 0,
     duration: initialData?.duration || 60,
     categoryId: initialData?.categoryId || '',
-    cityId: '', // Убираем initialData?.cityId, так как его нет в Service
-    districtId: '', // Убираем initialData?.districtId, так как его нет в Service
-    address: '', // Убираем initialData?.address, так как его нет в Service
+    cityId: '',
+    districtId: '',
+    address: '',
   });
 
   const [selectedCity, setSelectedCity] = useState(formData.cityId);
 
   const filteredDistricts = districts.filter(
-    district => district.cityId === formData.cityId
+    district => formData.cityId ? district.cityId === parseInt(formData.cityId) : false
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
