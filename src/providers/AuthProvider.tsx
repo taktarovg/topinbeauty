@@ -22,6 +22,7 @@ export function AuthProvider({ children, initialSession }: { children: ReactNode
   const [user, setUser] = useState<User | null>(initialSession?.user || null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTelegramWebApp, setIsTelegramWebApp] = useState(false); // Переносим в состояние
   const router = useRouter();
   const { toast } = useToast();
 
@@ -64,10 +65,11 @@ export function AuthProvider({ children, initialSession }: { children: ReactNode
   };
 
   useEffect(() => {
+    setIsTelegramWebApp(isTelegramMiniApp()); // Проверяем только на клиенте
     const checkSession = async () => {
       if (initialSession?.user) {
         setIsLoading(false);
-        return; // Если есть начальная сессия, не делаем лишний запрос
+        return;
       }
       const token = localStorage.getItem('sessionToken');
       if (token) {
@@ -96,7 +98,7 @@ export function AuthProvider({ children, initialSession }: { children: ReactNode
     logout, 
     isLoading, 
     error, 
-    isTelegramWebApp: isTelegramMiniApp(),
+    isTelegramWebApp,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

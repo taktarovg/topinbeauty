@@ -1,7 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import ServerAuthProvider from '@/providers/ServerAuthProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { Header } from '@/components/layout/Header';
@@ -14,16 +13,10 @@ const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 export const metadata: Metadata = {
   title: 'TopInBeauty - Запись к мастерам красоты',
   description: 'Онлайн запись к лучшим мастерам красоты',
-  icons: {
-    icon: '/favicon.ico',
-  },
+  icons: { icon: '/favicon.ico' },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
       <head>
