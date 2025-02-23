@@ -1,5 +1,5 @@
 // src/components/ui/theme.ts
-import { WebApp } from '@/lib/telegram';
+import { WebApp } from '@/lib/telegram-sdk';
 
 export function useAppTheme() {
   const themeParams = WebApp.themeParams;
