@@ -8,9 +8,27 @@ import { useToast } from '@/components/ui/use-toast';
 // Интерфейс для объекта избранного
 interface Favorite {
   id: number;
-  // Добавьте другие поля, если они есть в API, например:
-  // createdAt?: string;
-  // service?: { id: number; name: string };
+  title: string;
+  price: number;
+  duration: string;
+  master: {
+    name: string;
+    isPremium: boolean;
+    avatar: string | null;
+  };
+  category: {
+    parent: string | null;
+    name: string;
+  };
+  location: {
+    city: string;
+    district: string;
+  };
+  stats: {
+    views: number;
+    favorites: number;
+  };
+  image: string | null;
 }
 
 // Интерфейс для ответа API
