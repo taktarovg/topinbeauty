@@ -1,5 +1,8 @@
 // src/hooks/useWebAppMainButton.ts
-import { useMainButton } from '@telegram-apps/sdk-react';
+'use client';
+
+import { useEffect } from 'react';
+import { WebApp } from '@/lib/telegram';
 
 export function useWebAppMainButton({
   text,
@@ -7,9 +10,16 @@ export function useWebAppMainButton({
   textColor = '#ffffff',
   onClick,
   isActive = true,
-  isVisible = true
+  isVisible = true,
+}: {
+  text: string;
+  color?: string;
+  textColor?: string;
+  onClick: () => void;
+  isActive?: boolean;
+  isVisible?: boolean;
 }) {
-  const mainButton = useMainButton();
+  const mainButton = WebApp.MainButton;
 
   useEffect(() => {
     if (!mainButton) return;
@@ -42,6 +52,6 @@ export function useWebAppMainButton({
   return {
     setLoading: mainButton?.showProgress,
     setText: mainButton?.setText,
-    isReady: !!mainButton
+    isReady: !!mainButton,
   };
 }

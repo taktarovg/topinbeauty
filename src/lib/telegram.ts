@@ -38,6 +38,18 @@ interface TelegramWebApp {
     onClick(callback: () => void): void; // Добавлено
     offClick(callback: () => void): void;
   };
+  MainButton?: { // Добавлено
+    setText(text: string): void;
+    setParams(params: { color: string; text_color: string }): void;
+    show(): void;
+    hide(): void;
+    enable(): void;
+    disable(): void;
+    onClick(callback: () => void): void;
+    offClick(callback: () => void): void;
+    showProgress(): void;
+    hideProgress(): void;
+  };
   close(): void;
   showPopup(params: { message: string; buttons: { type: string }[] }): Promise<void>;
 }
