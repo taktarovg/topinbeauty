@@ -14,7 +14,7 @@ export type CalendarProps = React.ComponentPropsWithoutRef<typeof DayPicker> & {
   bookedDays?: Date[];
   fullyBookedDays?: Date[];
   selected?: Date | undefined;
-  onSelect?: SelectSingleEventHandler; // Сохраняем тип для одиночного выбора
+  onSelect?: SelectSingleEventHandler;
   fromDate?: Date;
   disabled?: ((date: Date) => boolean) | Date[] | undefined;
   modifiers?: { [key: string]: Date[] };
@@ -55,21 +55,21 @@ function Calendar({
   // Стили для модификаторов
   const defaultModifiersStyles = {
     available: {
-      backgroundColor: '#f0fdf4',
-      color: '#166534',
-      fontWeight: '500',
+      backgroundColor: "#f0fdf4",
+      color: "#166534",
+      fontWeight: "500",
     },
     scheduled: {
-      backgroundColor: '#dcfce7',
-      color: '#166534',
+      backgroundColor: "#dcfce7",
+      color: "#166534",
     },
     booked: {
-      backgroundColor: '#22c55e',
-      color: 'white',
+      backgroundColor: "#22c55e",
+      color: "white",
     },
     fullyBooked: {
-      backgroundColor: '#fb923c',
-      color: 'white',
+      backgroundColor: "#fb923c",
+      color: "white",
     },
     past: {
       opacity: 0.5,
@@ -78,12 +78,12 @@ function Calendar({
       opacity: 0.5,
     },
     today: {
-      fontWeight: '600',
+      fontWeight: "600",
     },
     selected: {
-      backgroundColor: '#3b82f6 !important',
-      color: 'white !important',
-      fontWeight: '600',
+      backgroundColor: "#3b82f6 !important",
+      color: "white !important",
+      fontWeight: "600",
     },
   };
 
@@ -96,6 +96,13 @@ function Calendar({
       onSelect(date, selectedDay, activeModifiers, e);
     }
   };
+
+  // Определяем disabled для DayPicker
+  const disabledMatcher = typeof disabled === 'function' ? disabled : [
+    ...(Array.isArray(disabled) ? disabled : []),
+    ...(fullyBookedDays || []),
+    { before: fromDate || new Date() },
+  ];
 
   return (
     <DayPicker
@@ -145,13 +152,9 @@ function Calendar({
       modifiersStyles={combinedModifiersStyles}
       selected={selected}
       // @ts-ignore: Suppress TypeScript error due to react-day-picker type mismatch
-      onSelect={handleSelect} // Используем адаптер с подавлением ошибки
+      onSelect={handleSelect}
       fromDate={fromDate}
-      disabled={[
-        ...(disabled && typeof disabled !== 'function' ? disabled : []),
-        ...(fullyBookedDays || []),
-        { before: fromDate || new Date() },
-      ]}
+      disabled={disabledMatcher} // Передаём обработанный disabled
       {...props}
     />
   );
