@@ -15,7 +15,7 @@ export async function POST(request: Request) {
         userId: validatedData.userId,
         masterId: validatedData.masterId,
         bookingDateTime: new Date(`${validatedData.date}T${validatedData.time}:00`),
-        cancelDeadline: new Date(validatedData.cancelDeadline), // Добавлено
+        cancelDeadline: new Date(validatedData.cancelDeadline),
         status: validatedData.status || 'PENDING',
         notes: validatedData.notes,
       },
@@ -83,7 +83,14 @@ export async function POST(request: Request) {
       },
     });
 
-    await sendBookingNotification(booking);
+    const masterChatId = booking.master.user.telegramId;
+    const clientChatId = booking.user.telegramId;
+
+    if (!masterChatId || !clientChatId) {
+      console.log('Missing Telegram IDs for notification');
+    } else {
+      await sendBookingNotification(booking, masterChatId, clientChatId);
+    }
 
     return NextResponse.json(booking);
   } catch (error) {
