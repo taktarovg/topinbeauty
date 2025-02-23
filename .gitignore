@@ -42,3 +42,6 @@ next-env.d.ts
 
 /public
 tsconfig.zip
+
+/src/pages
+/src/pages/preview.tsx
