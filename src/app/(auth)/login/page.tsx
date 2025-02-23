@@ -1,6 +1,7 @@
 // src/app/(auth)/login/page.tsx
 'use client'
 
+import { getTelegramUser } from '@/lib/telegram-client';
 import TelegramAuth from '@/components/telegram/TelegramAuth'
 import { useAuthContext } from '@/providers/AuthProvider'
 
