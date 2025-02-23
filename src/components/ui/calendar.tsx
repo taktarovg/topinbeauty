@@ -8,7 +8,6 @@ import { ru } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { isSameDay } from "date-fns";
 
-// Используем type вместо interface для корректного расширения пропсов DayPicker
 export type CalendarProps = React.ComponentPropsWithoutRef<typeof DayPicker> & {
   availableDates?: Date[];
   scheduledDays?: Date[];
@@ -45,29 +44,9 @@ function Calendar({
     scheduled: scheduledDays,
     booked: bookedDays,
     fullyBooked: fullyBookedDays,
-    disabled: (date: Date) => {
-      // День недоступен если:
-      // 1. Явно отключен через пропс disabled
-      if (typeof disabled === 'function' && disabled(date)) {
-        return true;
-      }
-      if (Array.isArray(disabled) && disabled.some(d => isSameDay(d, date))) {
-        return true;
-      }
-      // 2. Это прошедший день
-      if (date < new Date(new Date().setHours(0, 0, 0, 0))) {
-        return true;
-      }
-      // 3. День не отмечен как доступный (если список доступных дней предоставлен)
-      if (availableDates.length > 0 && !availableDates.some(d => isSameDay(d, date))) {
-        return true;
-      }
-      // 4. День полностью забронирован
-      if (fullyBookedDays.some(d => isSameDay(d, date))) {
-        return true;
-      }
-      return false;
-    },
+    past: (date: Date) => date < new Date(new Date().setHours(0, 0, 0, 0)),
+    unavailable: (date: Date) =>
+      availableDates.length > 0 && !availableDates.some(d => isSameDay(d, date)),
   };
 
   // Объединяем дефолтные модификаторы с переданными через пропс
@@ -91,6 +70,12 @@ function Calendar({
     fullyBooked: {
       backgroundColor: '#fb923c',
       color: 'white',
+    },
+    past: {
+      opacity: 0.5,
+    },
+    unavailable: {
+      opacity: 0.5,
     },
     today: {
       fontWeight: '600',
@@ -153,7 +138,11 @@ function Calendar({
       selected={selected}
       onSelect={onSelect}
       fromDate={fromDate}
-      disabled={combinedModifiers.disabled}
+      disabled={[
+        ...(disabled && typeof disabled !== 'function' ? disabled : []),
+        ...(fullyBookedDays || []),
+        { before: fromDate || new Date() },
+      ]}
       {...props}
     />
   );
