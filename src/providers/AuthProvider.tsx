@@ -1,11 +1,12 @@
-// src/providers/AuthProvider.tsx
+// src\providers\AuthProvider.tsx
+
 'use client';
 
 import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
+import { isTelegramMiniApp, getTelegramUser } from '@/lib/telegram-client';
 import type { User } from '@prisma/client';
-import { isTelegramMiniApp } from '@/lib/telegram-client'; // Импорт функции
 
 interface AuthContextType {
   user: User | null;
@@ -13,14 +14,14 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
-  isTelegramWebApp: boolean; // Добавляем новое свойство
+  isTelegramWebApp: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function AuthProvider({ children, initialSession }: { children: ReactNode; initialSession: any }) {
+  const [user, setUser] = useState<User | null>(initialSession?.user || null);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -64,22 +65,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const checkSession = async () => {
+    const checkSession = () => {
       const token = localStorage.getItem('sessionToken');
       if (token) {
-        try {
-          const response = await fetch('/api/profile', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-          }
-        } catch (err) {
-          localStorage.removeItem('sessionToken');
-        }
+        fetch('/api/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Invalid session');
+          })
+          .then(userData => setUser(userData))
+          .catch(() => localStorage.removeItem('sessionToken'))
+          .finally(() => setIsLoading(false));
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     checkSession();
   }, []);
@@ -90,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout, 
     isLoading, 
     error, 
-    isTelegramWebApp: isTelegramMiniApp(), // Добавляем значение
+    isTelegramWebApp: isTelegramMiniApp(), 
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
