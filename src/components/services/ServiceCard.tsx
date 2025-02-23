@@ -1,89 +1,71 @@
-// src/components/services/ServiceCard.tsx - update
-'use client'
+// src/components/services/ServiceCard.tsx
+'use client';
 
-import React, { useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Heart, Clock, MapPin, Crown, Eye, ArrowRight } from 'lucide-react'
-import { Avatar } from '@/components/ui/Avatar'
-import { useFavorites } from '@/hooks/useFavorites'
-import { useAuthContext } from '@/providers/AuthProvider'
-import { cn } from '@/lib/utils'
+import React, { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Heart, Clock, MapPin, Crown, Eye, ArrowRight } from 'lucide-react';
+import { Avatar } from '@/components/ui/Avatar';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuthContext } from '@/providers/AuthProvider';
+import { cn } from '@/lib/utils';
 
 interface ServiceCardProps {
-  id: number
-  title: string
-  price: number
-  duration: string
+  id: number;
+  title: string;
+  price: number;
+  duration: string;
   master: {
-    name: string
-    isPremium: boolean
-    avatar?: string | null
-  }
+    name: string;
+    isPremium: boolean;
+    avatar?: string | null;
+  };
   category: {
-    parent?: string | null
-    name: string
-  }
+    parent?: string | null;
+    name: string;
+  };
   location: {
-    city: string
-    district: string
-  }
+    city: string;
+    district: string;
+  };
   stats: {
-    views: number
-    favorites: number
-  }
-  image?: string | null
+    views: number;
+    favorites: number;
+  };
+  image?: string | null;
 }
 
 export const ServiceCard = React.memo(function ServiceCard(props: ServiceCardProps) {
-  const { user } = useAuthContext()
-  const { 
-    addToFavorites, 
-    removeFromFavorites, 
-    isFavorite, 
-    isAnimating 
-  } = useFavorites()
+  const { user } = useAuthContext();
+  const { addToFavorites, removeFromFavorites, isFavorite, isAnimating } = useFavorites();
+  const { id, title, price, duration, master, category, location, stats, image } = props;
+  const [favoritesCount, setFavoritesCount] = useState(stats.favorites);
 
-  const {
-    id, 
-    title, 
-    price, 
-    duration, 
-    master, 
-    category, 
-    location, 
-    stats, 
-    image 
-  } = props
-
-  const [favoritesCount, setFavoritesCount] = useState(stats.favorites)
-  const isFav = isFavorite(id)
-  const isAnimatingHeart = isAnimating[id]
+  const isFav = isFavorite(id);
+  const isAnimatingHeart = isAnimating[id];
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
     if (!user) {
-      window.location.href = '/login'
-      return
+      window.location.href = '/login';
+      return;
     }
-    
     try {
       if (isFav) {
-        await removeFromFavorites.mutateAsync(id)
-        setFavoritesCount(prev => Math.max(0, prev - 1))
+        await removeFromFavorites.mutateAsync(id);
+        setFavoritesCount(prev => Math.max(0, prev - 1));
       } else {
-        await addToFavorites.mutateAsync(id)
-        setFavoritesCount(prev => prev + 1)
+        await addToFavorites.mutateAsync(id);
+        setFavoritesCount(prev => prev + 1);
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error)
+      console.error('Ошибка при переключении в избранное:', error);
     }
-  }
+  };
 
   return (
     <article className="bg-white rounded-lg overflow-hidden border shadow-sm">
-      <div className="relative w-full aspect-square">
+      <div className="relative w-full h-0 aspect-square">
         {image ? (
           <div className="relative w-full h-full">
             <Image
@@ -101,7 +83,6 @@ export const ServiceCard = React.memo(function ServiceCard(props: ServiceCardPro
           </div>
         )}
       </div>
-
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
@@ -117,7 +98,7 @@ export const ServiceCard = React.memo(function ServiceCard(props: ServiceCardPro
             </div>
             <div className="flex items-center gap-1 text-sm text-gray-500">
               <MapPin className="h-4 w-4" />
-              <span>{location.city}, {location.district}</span>
+              {location.city}, {location.district}
             </div>
           </div>
           <div className="text-right">
@@ -125,7 +106,7 @@ export const ServiceCard = React.memo(function ServiceCard(props: ServiceCardPro
               {new Intl.NumberFormat('ru-RU', {
                 style: 'currency',
                 currency: 'RUB',
-                minimumFractionDigits: 0
+                minimumFractionDigits: 0,
               }).format(price)}
             </p>
             <div className="flex items-center text-sm text-gray-500 mt-1">
@@ -134,12 +115,11 @@ export const ServiceCard = React.memo(function ServiceCard(props: ServiceCardPro
             </div>
           </div>
         </div>
-
-        <div className="mt-4 flex items-center justify-between">
+        <div className="flex justify-between items-center mt-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Avatar 
-                src={master.avatar}
+              <Avatar
+                src={master.avatar ?? undefined} // Преобразуем null в undefined
                 alt={master.name}
                 fallback={master.name[0].toUpperCase()}
                 className="w-8 h-8"
@@ -152,26 +132,26 @@ export const ServiceCard = React.memo(function ServiceCard(props: ServiceCardPro
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={handleFavoriteClick}
                 className={cn(
                   "group relative flex items-center gap-1 transition-all duration-200",
-                  isFav ? "text-red-500" : "text-gray-500 hover:text-gray-700"
+                  isFav ? "text-red-500" : "text-gray-500 hover:text-gray-700",
                 )}
               >
-                <Heart 
+                <Heart
                   className={cn(
                     "h-4 w-4 transition-all duration-200",
                     isFav && "fill-red-500 stroke-red-500",
                     isAnimatingHeart && "scale-125",
-                    "group-hover:scale-110"
+                    "group-hover:scale-110",
                   )}
                 />
                 <span className="text-sm text-gray-500">{favoritesCount}</span>
               </button>
-              <div className="flex items-center text-gray-500 gap-1">
+              <div className="flex items-center text-sm text-gray-500 gap-1">
                 <Eye className="h-4 w-4" />
-                <span className="text-sm">{stats.views}</span>
+                <span>{stats.views}</span>
               </div>
             </div>
           </div>
@@ -185,7 +165,7 @@ export const ServiceCard = React.memo(function ServiceCard(props: ServiceCardPro
         </div>
       </div>
     </article>
-  )
-})
+  );
+});
 
-ServiceCard.displayName = 'ServiceCard'
+ServiceCard.displayName = 'ServiceCard';
