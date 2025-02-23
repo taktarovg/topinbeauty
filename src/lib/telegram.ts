@@ -1,11 +1,10 @@
 // src/lib/telegram.ts
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { WebApp } from './telegram-sdk'; // Импортируем WebApp из telegram-sdk.ts
 import { TelegramBotError } from '@/types/errors';
 import type { BookingWithRelations } from '@/types/booking';
 
-// Типизация для Telegram WebApp
+// Типизация для Telegram WebApp (используется только для клиентских функций)
 export interface TelegramWebApp {
   initData: string;
   initDataUnsafe: {
@@ -59,70 +58,6 @@ const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 
 if (!BOT_TOKEN) {
   throw new Error('TELEGRAM_BOT_TOKEN is not defined');
-}
-
-// Функции для работы с Mini App
-export function isTelegramMiniApp(): boolean {
-  return typeof window !== 'undefined' && !!WebApp.initData;
-}
-
-export function getTelegramThemeParams() {
-  if (!isTelegramMiniApp()) {
-    return {
-      backgroundColor: '#ffffff',
-      textColor: '#000000',
-      buttonColor: '#2481cc',
-      buttonTextColor: '#ffffff',
-    };
-  }
-
-  const { bg_color, text_color, button_color, button_text_color } = WebApp.themeParams;
-  return {
-    backgroundColor: bg_color || '#ffffff',
-    textColor: text_color || '#000000',
-    buttonColor: button_color || '#2481cc',
-    buttonTextColor: button_text_color || '#ffffff',
-  };
-}
-
-export function configureWebApp() {
-  if (!isTelegramMiniApp()) return;
-
-  try {
-    // Установка цветов темы
-    WebApp.setHeaderColor('secondary_bg_color');
-    WebApp.setBackgroundColor('bg_color');
-
-    // Расширение окна на весь экран
-    WebApp.expand();
-
-    // Настройка haptic feedback
-    WebApp.hapticFeedback.impactOccurred('light');
-
-    // Включаем отображение кнопки "Назад"
-    if (WebApp.BackButton) {
-      WebApp.BackButton.show();
-    }
-  } catch (error) {
-    console.error('Failed to configure WebApp:', error);
-  }
-}
-
-// Функция для инициализации данных пользователя
-export function getTelegramUser() {
-  if (!WebApp.initDataUnsafe?.user) {
-    return null;
-  }
-
-  const { user } = WebApp.initDataUnsafe;
-  return {
-    telegramId: user.id.toString(),
-    username: user.username || null,
-    firstName: user.first_name || '',
-    lastName: user.last_name || '',
-    avatar: user.photo_url || null,
-    isPremium: user.premium || false,
-  };
 }
 
 // Существующие функции для работы с ботом
@@ -258,8 +193,69 @@ function getBookingStatusText(status: string): string {
   return statusTexts[status] || status;
 }
 
-// Утилиты для работы с Telegram WebApp
+// Клиентские утилиты (зависят от WebApp)
+export function isTelegramMiniApp(): boolean {
+  // Импортируем WebApp только для клиентских функций
+  const { WebApp } = require('./telegram-sdk');
+  return typeof window !== 'undefined' && !!WebApp.initData;
+}
+
+export function getTelegramThemeParams() {
+  const { WebApp } = require('./telegram-sdk');
+  if (!isTelegramMiniApp()) {
+    return {
+      backgroundColor: '#ffffff',
+      textColor: '#000000',
+      buttonColor: '#2481cc',
+      buttonTextColor: '#ffffff',
+    };
+  }
+
+  const { bg_color, text_color, button_color, button_text_color } = WebApp.themeParams;
+  return {
+    backgroundColor: bg_color || '#ffffff',
+    textColor: text_color || '#000000',
+    buttonColor: button_color || '#2481cc',
+    buttonTextColor: button_text_color || '#ffffff',
+  };
+}
+
+export function configureWebApp() {
+  const { WebApp } = require('./telegram-sdk');
+  if (!isTelegramMiniApp()) return;
+
+  try {
+    WebApp.setHeaderColor('secondary_bg_color');
+    WebApp.setBackgroundColor('bg_color');
+    WebApp.expand();
+    WebApp.hapticFeedback.impactOccurred('light');
+    if (WebApp.BackButton) {
+      WebApp.BackButton.show();
+    }
+  } catch (error) {
+    console.error('Failed to configure WebApp:', error);
+  }
+}
+
+export function getTelegramUser() {
+  const { WebApp } = require('./telegram-sdk');
+  if (!WebApp.initDataUnsafe?.user) {
+    return null;
+  }
+
+  const { user } = WebApp.initDataUnsafe;
+  return {
+    telegramId: user.id.toString(),
+    username: user.username || null,
+    firstName: user.first_name || '',
+    lastName: user.last_name || '',
+    avatar: user.photo_url || null,
+    isPremium: user.premium || false,
+  };
+}
+
 export function handleTelegramClick(callback: () => void) {
+  const { WebApp } = require('./telegram-sdk');
   if (isTelegramMiniApp()) {
     WebApp.hapticFeedback.impactOccurred('light');
   }
@@ -267,12 +263,14 @@ export function handleTelegramClick(callback: () => void) {
 }
 
 export function closeTelegramWebApp() {
+  const { WebApp } = require('./telegram-sdk');
   if (isTelegramMiniApp()) {
     WebApp.close();
   }
 }
 
 export function showTelegramAlert(message: string, callback?: () => void) {
+  const { WebApp } = require('./telegram-sdk');
   if (isTelegramMiniApp()) {
     WebApp.showPopup({
       message,
