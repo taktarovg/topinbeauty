@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, SelectSingleEventHandler } from "react-day-picker";
 import { ru } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { isSameDay } from "date-fns";
@@ -14,7 +14,7 @@ export type CalendarProps = React.ComponentPropsWithoutRef<typeof DayPicker> & {
   bookedDays?: Date[];
   fullyBookedDays?: Date[];
   selected?: Date | undefined;
-  onSelect?: (date: Date | undefined) => void;
+  onSelect?: SelectSingleEventHandler; // Указываем конкретный тип для одиночного выбора
   fromDate?: Date;
   disabled?: ((date: Date) => boolean) | Date[] | undefined;
   modifiers?: { [key: string]: Date[] };
@@ -92,6 +92,7 @@ function Calendar({
 
   return (
     <DayPicker
+      mode="single" // Явно указываем режим одиночного выбора
       showOutsideDays={showOutsideDays}
       locale={ru}
       className={cn("p-3", className)}
