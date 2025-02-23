@@ -23,6 +23,8 @@ interface TelegramWebApp {
     text_color?: string;
     button_color?: string;
     button_text_color?: string;
+    secondary_bg_color?: string; // Добавлено
+    hint_color?: string;  // Добавлено
   };
   setHeaderColor(color: string): void;
   setBackgroundColor(color: string): void;
