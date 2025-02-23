@@ -138,7 +138,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
             Категория
           </label>
           <Select
-            value={formData.categoryId.toString()} // Преобразуем в строку
+            value={formData.categoryId.toString()}
             onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
           >
             <SelectTrigger>
@@ -175,7 +175,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
               </SelectTrigger>
               <SelectContent>
                 {cities.map((city) => (
-                  <SelectItem key={city.id} value={city.id}>
+                  <SelectItem key={city.id} value={city.id.toString()}> {/* Преобразуем в строку */}
                     {city.name}
                   </SelectItem>
                 ))}
