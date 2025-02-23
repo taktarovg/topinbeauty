@@ -2,6 +2,7 @@
 
 'use client'
 
+import { getTelegramUser } from '@/lib/telegram-client';
 import { Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
 import { ServiceList } from '@/components/services/ServiceList';
