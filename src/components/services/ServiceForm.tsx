@@ -104,7 +104,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
             </label>
             <Input
               type="number"
-              value={formData.price.toString()} // Преобразуем Decimal или number в строку
+              value={formData.price.toString()}
               onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
               min={0}
               required
@@ -138,7 +138,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
             Категория
           </label>
           <Select
-            value={formData.categoryId}
+            value={formData.categoryId.toString()} // Преобразуем в строку
             onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
           >
             <SelectTrigger>
@@ -146,7 +146,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
             </SelectTrigger>
             <SelectContent>
               {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
+                <SelectItem key={category.id} value={category.id.toString()}>
                   {category.name}
                 </SelectItem>
               ))}
