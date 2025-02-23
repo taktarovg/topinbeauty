@@ -1,26 +1,25 @@
 // src/components/services/ServiceForm.tsx
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Category, City, District, Service } from '@prisma/client'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Category, City, District, Service } from '@prisma/client';
 
 interface ServiceFormProps {
-  initialData?: Service
-  categories: Category[]
-  cities: City[]
-  districts: District[]
+  initialData?: Service;
+  categories: Category[];
+  cities: City[];
+  districts: District[];
 }
 
 export function ServiceForm({ initialData, categories, cities, districts }: ServiceFormProps) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedCity, setSelectedCity] = useState(initialData?.cityId || '')
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -28,25 +27,27 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
     price: initialData?.price || 0,
     duration: initialData?.duration || 60,
     categoryId: initialData?.categoryId || '',
-    cityId: initialData?.cityId || '',
+    cityId: initialData?.cityId || '', // Это поле может быть некорректным, но оставим его в formData
     districtId: initialData?.districtId || '',
     address: initialData?.address || '',
-  })
+  });
+
+  const [selectedCity, setSelectedCity] = useState(formData.cityId); // Используем formData.cityId вместо initialData?.cityId
 
   const filteredDistricts = districts.filter(
     district => district.cityId === formData.cityId
-  )
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
       const url = initialData 
         ? `/api/services/${initialData.id}`
-        : '/api/services'
+        : '/api/services';
       
-      const method = initialData ? 'PATCH' : 'POST'
+      const method = initialData ? 'PATCH' : 'POST';
 
       const response = await fetch(url, {
         method,
@@ -54,20 +55,20 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to save service')
+        throw new Error('Failed to save service');
       }
 
-      router.push('/profile')
-      router.refresh()
+      router.push('/profile');
+      router.refresh();
     } catch (error) {
-      console.error('Service save error:', error)
+      console.error('Service save error:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -165,7 +166,8 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
                   ...formData, 
                   cityId: value,
                   districtId: '' // Сбрасываем район при смене города
-                })
+                });
+                setSelectedCity(value); // Синхронизируем selectedCity
               }}
             >
               <SelectTrigger>
@@ -231,5 +233,5 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
         </Button>
       </div>
     </form>
-  )
+  );
 }
