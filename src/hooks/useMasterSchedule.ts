@@ -1,4 +1,7 @@
 // src/hooks/useMasterSchedule.ts
+
+'use client'
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';

@@ -1,4 +1,7 @@
 // src/components/bookings/BookingCard.tsx
+
+'use client';
+
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Clock, MapPin, Calendar } from 'lucide-react';

@@ -1,5 +1,7 @@
 // src/components/bookings/BookingSkeleton.tsx - new
 
+'use client';
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 

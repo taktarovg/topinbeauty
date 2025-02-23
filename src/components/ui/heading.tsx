@@ -1,4 +1,7 @@
 // src/components/ui/heading.tsx - new
+
+'use client'
+
 interface HeadingProps {
     title: string
     description?: string

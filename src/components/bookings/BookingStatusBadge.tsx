@@ -1,4 +1,7 @@
 // src/components/bookings/BookingStatusBadge.tsx - update
+
+'use client';
+
 import { Badge } from "@/components/ui/badge"
 import { BookingStatus } from "@prisma/client"
 import { Clock, CheckCircle, XCircle, CheckCircle2 } from "lucide-react"

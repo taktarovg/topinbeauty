@@ -1,5 +1,7 @@
 // src/components/ui/card.tsx - update
 
+'use client'
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
 

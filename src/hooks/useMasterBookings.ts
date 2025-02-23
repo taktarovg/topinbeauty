@@ -1,4 +1,7 @@
 // src/hooks/useMasterBookings.ts - new
+
+'use client'
+
 import { useQuery } from '@tanstack/react-query'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import type { BookingWithRelations } from '@/types/booking'
