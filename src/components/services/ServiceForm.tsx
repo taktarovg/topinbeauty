@@ -104,7 +104,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
             </label>
             <Input
               type="number"
-              value={formData.price}
+              value={formData.price.toString()} // Преобразуем Decimal или number в строку
               onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
               min={0}
               required
