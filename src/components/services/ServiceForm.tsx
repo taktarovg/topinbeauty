@@ -175,7 +175,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
               </SelectTrigger>
               <SelectContent>
                 {cities.map((city) => (
-                  <SelectItem key={city.id} value={city.id.toString()}> {/* Преобразуем в строку */}
+                  <SelectItem key={city.id} value={city.id.toString()}>
                     {city.name}
                   </SelectItem>
                 ))}
@@ -197,7 +197,7 @@ export function ServiceForm({ initialData, categories, cities, districts }: Serv
               </SelectTrigger>
               <SelectContent>
                 {filteredDistricts.map((district) => (
-                  <SelectItem key={district.id} value={district.id}>
+                  <SelectItem key={district.id} value={district.id.toString()}> {/* Преобразуем в строку */}
                     {district.name}
                   </SelectItem>
                 ))}
