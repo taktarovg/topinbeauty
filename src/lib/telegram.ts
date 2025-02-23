@@ -1,7 +1,7 @@
 // src/lib/telegram.ts
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { init } from '@telegram-apps/sdk';
+import { WebApp } from './telegram-sdk'; // Импортируем WebApp из telegram-sdk.ts
 import { TelegramBotError } from '@/types/errors';
 import type { BookingWithRelations } from '@/types/booking';
 
@@ -62,9 +62,9 @@ if (!BOT_TOKEN) {
 }
 
 // Инициализация WebApp с явной типизацией
-export const WebApp: TelegramWebApp = init({
-  debug: process.env.NODE_ENV === 'development',
-});
+// export const WebApp: TelegramWebApp = init({
+//   debug: process.env.NODE_ENV === 'development',
+// });
 
 // Функции для работы с Mini App
 export function isTelegramMiniApp(): boolean {
