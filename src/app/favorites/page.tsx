@@ -1,5 +1,5 @@
 // src/app/favorites/page.tsx
-'use client'
+'use client';
 
 import { useState } from 'react';
 import { ServiceCard } from '@/components/services/ServiceCard';

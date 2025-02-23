@@ -1,105 +1,100 @@
-// src/app/api/master/bookings/route.ts
-import { NextResponse, NextRequest } from 'next/server';
+// src/app/api/bookings/route.ts
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
-import { z } from 'zod';
-import { parse, startOfDay, endOfDay } from 'date-fns';
+import { sendBookingNotification } from '@/lib/telegram';
+import { bookingSchema } from '@/types/booking';
 
-const querySchema = z.object({
-    date: z.string().optional(),
-    status: z.enum(['PENDING', 'CONFIRMED', 'CANCELED', 'COMPLETED']).optional(),
-});
-
-export async function GET(request: NextRequest) { // Обновили тип с Request на NextRequest
+export async function POST(request: Request) {
     try {
-        const session = await getSession(request); // Передаем request в getSession
-        if (!session?.user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const body = await request.json();
+        const validatedData = bookingSchema.parse(body);
 
-        const masterProfile = await prisma.masterProfile.findUnique({
-            where: { userId: session.user.id },
-        });
-
-        if (!masterProfile) {
-            return NextResponse.json({ error: 'Master profile not found' }, { status: 404 });
-        }
-
-        const { searchParams } = new URL(request.url);
-        const query = querySchema.parse({
-            date: searchParams.get('date') || undefined,
-            status: searchParams.get('status') || undefined,
-        });
-
-        const where = {
-            masterId: masterProfile.id,
-            ...(query.date && {
-                bookingDateTime: {
-                    gte: startOfDay(parse(query.date, 'yyyy-MM-dd', new Date())),
-                    lte: endOfDay(parse(query.date, 'yyyy-MM-dd', new Date())),
-                },
-            }),
-            ...(query.status && { status: query.status }),
-        };
-
-        const bookings = await prisma.booking.findMany({
-            where,
+        const booking = await prisma.booking.create({
+            data: {
+                serviceId: validatedData.serviceId,
+                userId: validatedData.userId,
+                masterId: validatedData.masterId,
+                bookingDateTime: new Date(`${validatedData.date}T${validatedData.time}:00`),
+                cancelDeadline: new Date(validatedData.cancelDeadline),
+                status: validatedData.status || 'PENDING',
+                notes: validatedData.notes,
+            },
             include: {
-                service: {
-                    select: {
-                        id: true,
-                        name: true,
-                        duration: true,
-                        price: true,
-                        image: true,
-                    },
-                },
                 user: {
                     select: {
-                        id: true,
+                        telegramId: true,
                         firstName: true,
                         lastName: true,
                         avatar: true,
                     },
                 },
-            },
-            orderBy: {
-                bookingDateTime: 'asc',
+                service: {
+                    include: {
+                        master: {
+                            include: {
+                                user: {
+                                    select: {
+                                        telegramId: true,
+                                        firstName: true,
+                                        lastName: true,
+                                        avatar: true,
+                                    },
+                                },
+                                city: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                },
+                                district: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                master: {
+                    include: {
+                        user: {
+                            select: {
+                                telegramId: true,
+                                firstName: true,
+                                lastName: true,
+                                avatar: true,
+                            },
+                        },
+                        city: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                        district: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
-        // Преобразуем Decimal в число
-        const transformedBookings = bookings.map(booking => ({
-            ...booking,
-            service: {
-                ...booking.service,
-                price: booking.service.price ? Number(booking.service.price) : 0,
-            },
-        }));
+        const masterChatId = booking.master.user.telegramId;
+        const clientChatId = booking.user.telegramId;
 
-        const totalBookings = transformedBookings.length;
-        const confirmedBookings = transformedBookings.filter(b => b.status === 'CONFIRMED').length;
-        const pendingBookings = transformedBookings.filter(b => b.status === 'PENDING').length;
-
-        return NextResponse.json({
-            bookings: transformedBookings,
-            stats: {
-                totalBookings,
-                confirmedBookings,
-                pendingBookings,
-            },
-        });
-    } catch (error) {
-        console.error('Bookings fetch error:', error);
-        if (error instanceof z.ZodError) {
-            return NextResponse.json(
-                { error: 'Invalid query parameters', details: error.errors },
-                { status: 400 }
-            );
+        if (!masterChatId || !clientChatId) {
+            console.log('Missing Telegram IDs for notification');
+        } else {
+            await sendBookingNotification(booking, masterChatId, clientChatId);
         }
-        return NextResponse.json(
-            { error: 'Failed to fetch bookings' },
-            { status: 500 }
-        );
+
+        return NextResponse.json(booking);
+    } catch (error) {
+        console.error('Booking creation error:', error);
+        return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });
     }
 }
