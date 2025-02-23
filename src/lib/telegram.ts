@@ -6,7 +6,7 @@ import { TelegramBotError } from '@/types/errors';
 import type { BookingWithRelations } from '@/types/booking';
 
 // Типизация для Telegram WebApp
-interface TelegramWebApp {
+export interface TelegramWebApp {
   initData: string;
   initDataUnsafe: {
     user?: {
