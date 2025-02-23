@@ -1,10 +1,11 @@
 // src/app/api/master/schedule/route.ts
+
+export const dynamic = 'force-dynamic'
+
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { startOfMonth, endOfMonth, parse } from 'date-fns';
-
-export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) { // Обновили тип с Request на NextRequest
   try {

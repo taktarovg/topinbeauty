@@ -1,10 +1,11 @@
 // src/app/api/master/settings/route.ts
+
+export const dynamic = 'force-dynamic'
+
 import { NextResponse, NextRequest } from 'next/server';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-
-export const dynamic = 'force-dynamic'
 
 const settingsSchema = z.object({
     bufferTime: z.number().min(0).max(60),

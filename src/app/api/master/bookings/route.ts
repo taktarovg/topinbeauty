@@ -1,11 +1,12 @@
 // src/app/api/master/bookings/route.ts
+
+export const dynamic = 'force-dynamic'
+
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { z } from 'zod';
 import { parse, startOfDay, endOfDay } from 'date-fns';
-
-export const dynamic = 'force-dynamic'
 
 const querySchema = z.object({
     date: z.string().optional(),
