@@ -1,12 +1,16 @@
 // src/hooks/useWebAppBackButton.ts
-import { useBackButton } from '@telegram-apps/sdk-react';
+'use client';
+
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { WebApp } from '@/lib/telegram';
 
 export function useWebAppBackButton(enabled: boolean = true) {
   const router = useRouter();
-  const backButton = useBackButton();
 
   useEffect(() => {
+    const backButton = WebApp.BackButton;
+
     if (!backButton) return;
 
     if (enabled) {
@@ -23,9 +27,9 @@ export function useWebAppBackButton(enabled: boolean = true) {
     } else {
       backButton.hide();
     }
-  }, [enabled, backButton, router]);
+  }, [enabled, router]);
 
   return {
-    isReady: !!backButton
+    isReady: !!WebApp.BackButton,
   };
 }
