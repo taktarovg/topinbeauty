@@ -1,9 +1,6 @@
 // src/lib/telegram-init.ts
-import { init } from '@telegram-apps/sdk';
+import { WebApp } from './telegram-sdk'; // Импортируем готовый WebApp
 import type { TelegramWebApp } from './telegram';
-
-// Инициализируем WebApp для глобального доступа с явной типизацией
-export const WebApp: TelegramWebApp = init({});
 
 // Экспортируем тип пользователя из TelegramWebApp
 export type WebAppUser = NonNullable<TelegramWebApp['initDataUnsafe']['user']>;
