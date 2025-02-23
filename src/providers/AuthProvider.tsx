@@ -1,12 +1,11 @@
-// src\providers\AuthProvider.tsx
-
+// src/providers/AuthProvider.tsx
 'use client';
 
 import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
-import { isTelegramMiniApp, getTelegramUser } from '@/lib/telegram-client';
 import type { User } from '@prisma/client';
+import { isTelegramMiniApp } from '@/lib/telegram-client';
 
 interface AuthContextType {
   user: User | null;
@@ -19,9 +18,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children, initialSession }: { children: ReactNode; initialSession: any }) {
+export function AuthProvider({ children, initialSession }: { children: ReactNode; initialSession?: any }) {
   const [user, setUser] = useState<User | null>(initialSession?.user || null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -65,27 +64,31 @@ export function AuthProvider({ children, initialSession }: { children: ReactNode
   };
 
   useEffect(() => {
-    const checkSession = () => {
+    const checkSession = async () => {
+      if (initialSession?.user) {
+        setIsLoading(false);
+        return; // Если есть начальная сессия, не делаем лишний запрос
+      }
       const token = localStorage.getItem('sessionToken');
       if (token) {
-        fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then(response => {
-            if (response.ok) {
-              return response.json();
-            }
-            throw new Error('Invalid session');
-          })
-          .then(userData => setUser(userData))
-          .catch(() => localStorage.removeItem('sessionToken'))
-          .finally(() => setIsLoading(false));
-      } else {
-        setIsLoading(false);
+        try {
+          const response = await fetch('/api/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+          } else {
+            localStorage.removeItem('sessionToken');
+          }
+        } catch (err) {
+          localStorage.removeItem('sessionToken');
+        }
       }
+      setIsLoading(false);
     };
     checkSession();
-  }, []);
+  }, [initialSession]);
 
   const value = { 
     user, 
@@ -93,7 +96,7 @@ export function AuthProvider({ children, initialSession }: { children: ReactNode
     logout, 
     isLoading, 
     error, 
-    isTelegramWebApp: isTelegramMiniApp(), 
+    isTelegramWebApp: isTelegramMiniApp(),
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
