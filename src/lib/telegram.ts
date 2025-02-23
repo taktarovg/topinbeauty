@@ -23,8 +23,8 @@ export interface TelegramWebApp {
     text_color?: string;
     button_color?: string;
     button_text_color?: string;
-    secondary_bg_color?: string; // Добавлено
-    hint_color?: string;  // Добавлено
+    secondary_bg_color?: string;
+    hint_color?: string;
   };
   setHeaderColor(color: string): void;
   setBackgroundColor(color: string): void;
@@ -35,10 +35,10 @@ export interface TelegramWebApp {
   BackButton?: {
     show(): void;
     hide(): void;
-    onClick(callback: () => void): void; // Добавлено
+    onClick(callback: () => void): void;
     offClick(callback: () => void): void;
   };
-  MainButton?: { // Добавлено
+  MainButton?: {
     setText(text: string): void;
     setParams(params: { color: string; text_color: string }): void;
     show(): void;
@@ -60,11 +60,6 @@ const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 if (!BOT_TOKEN) {
   throw new Error('TELEGRAM_BOT_TOKEN is not defined');
 }
-
-// Инициализация WebApp с явной типизацией
-// export const WebApp: TelegramWebApp = init({
-//   debug: process.env.NODE_ENV === 'development',
-// });
 
 // Функции для работы с Mini App
 export function isTelegramMiniApp(): boolean {
@@ -158,8 +153,8 @@ export async function sendTelegramMessage(chatId: string, text: string) {
   }
 }
 
-export async function sendBookingNotification(booking: BookingWithRelations) {
-  if (!booking.user.telegramId || !booking.service.master.user.telegramId) {
+export async function sendBookingNotification(booking: BookingWithRelations, masterChatId: string, clientChatId: string) {
+  if (!masterChatId || !clientChatId) {
     console.log('Missing telegram IDs for notification');
     return;
   }
@@ -169,7 +164,7 @@ export async function sendBookingNotification(booking: BookingWithRelations) {
   const masterMessage = `
 🆕 Новая запись!
 
-Клиент: ${booking.user.firstName} ${booking.user.lastName}
+Клиент: ${booking.user.firstName} ${booking.user.lastName || ''}
 Услуга: ${booking.service.name}
 Дата: ${bookingDate}
 Статус: ${getBookingStatusText(booking.status)}
@@ -190,8 +185,8 @@ ${booking.status === 'PENDING' ? '\nОжидайте подтверждения 
 
   try {
     await Promise.allSettled([
-      sendTelegramMessage(booking.service.master.user.telegramId, masterMessage),
-      sendTelegramMessage(booking.user.telegramId, clientMessage),
+      sendTelegramMessage(masterChatId, masterMessage),
+      sendTelegramMessage(clientChatId, clientMessage),
     ]);
   } catch (error) {
     console.error('Failed to send booking notifications:', error);
