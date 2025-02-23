@@ -14,7 +14,7 @@ export type CalendarProps = React.ComponentPropsWithoutRef<typeof DayPicker> & {
   bookedDays?: Date[];
   fullyBookedDays?: Date[];
   selected?: Date | undefined;
-  onSelect?: SelectSingleEventHandler; // Указываем конкретный тип для одиночного выбора
+  onSelect?: SelectSingleEventHandler; // Сохраняем строгий тип для одиночного выбора
   fromDate?: Date;
   disabled?: ((date: Date) => boolean) | Date[] | undefined;
   modifiers?: { [key: string]: Date[] };
@@ -90,9 +90,16 @@ function Calendar({
   // Объединяем дефолтные стили с переданными через пропс
   const combinedModifiersStyles = { ...defaultModifiersStyles, ...modifiersStyles };
 
+  // Адаптер для onSelect, чтобы соответствовать ожиданиям DayPicker
+  const handleSelect: SelectSingleEventHandler = (date, selectedDay, activeModifiers, e) => {
+    if (onSelect) {
+      onSelect(date, selectedDay, activeModifiers, e);
+    }
+  };
+
   return (
     <DayPicker
-      mode="single" // Явно указываем режим одиночного выбора
+      mode="single" // Режим одиночного выбора
       showOutsideDays={showOutsideDays}
       locale={ru}
       className={cn("p-3", className)}
@@ -137,7 +144,7 @@ function Calendar({
       modifiers={combinedModifiers}
       modifiersStyles={combinedModifiersStyles}
       selected={selected}
-      onSelect={onSelect}
+      onSelect={handleSelect} // Используем адаптер
       fromDate={fromDate}
       disabled={[
         ...(disabled && typeof disabled !== 'function' ? disabled : []),
