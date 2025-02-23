@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { WebApp } from '@/lib/telegram'; // Импорт из существующего модуля
+import { WebApp } from '@/lib/telegram-sdk'; // Импорт из существующего модуля
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 

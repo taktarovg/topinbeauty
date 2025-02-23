@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { WebApp } from '@/lib/telegram';
+import { WebApp } from '@/lib/telegram-sdk';
 
 export function useWebAppBackButton(enabled: boolean = true) {
   const router = useRouter();

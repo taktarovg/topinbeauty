@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { WebApp } from '@/lib/telegram';
+import { WebApp } from '@/lib/telegram-sdk';
 
 export function useWebAppMainButton({
   text,
