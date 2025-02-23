@@ -5,7 +5,7 @@ import { createContext, useContext, ReactNode, useEffect, useState } from 'react
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import type { User } from '@prisma/client';
-import { isTelegramMiniApp } from '@/lib/telegram'; // Импорт функции
+import { isTelegramMiniApp } from '@/lib/telegram-client'; // Импорт функции
 
 interface AuthContextType {
   user: User | null;
