@@ -35,6 +35,8 @@ interface TelegramWebApp {
   BackButton?: {
     show(): void;
     hide(): void;
+    onClick(callback: () => void): void; // Добавлено
+    offClick(callback: () => void): void;
   };
   close(): void;
   showPopup(params: { message: string; buttons: { type: string }[] }): Promise<void>;
