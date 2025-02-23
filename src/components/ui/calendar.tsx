@@ -8,7 +8,8 @@ import { ru } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { isSameDay } from "date-fns";
 
-export interface CalendarProps extends React.ComponentProps<typeof DayPicker> {
+// Используем type вместо interface для корректного расширения пропсов DayPicker
+export type CalendarProps = React.ComponentPropsWithoutRef<typeof DayPicker> & {
   availableDates?: Date[];
   scheduledDays?: Date[];
   bookedDays?: Date[];
@@ -19,8 +20,8 @@ export interface CalendarProps extends React.ComponentProps<typeof DayPicker> {
   disabled?: ((date: Date) => boolean) | Date[] | undefined;
   modifiers?: { [key: string]: Date[] };
   modifiersStyles?: { [key: string]: React.CSSProperties };
-  className?: string; // Добавлено
-}
+  className?: string;
+};
 
 function Calendar({
   className,
