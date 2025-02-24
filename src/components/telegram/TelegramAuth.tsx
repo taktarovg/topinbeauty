@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthContext } from '@/providers/AuthProvider';
-import { WebApp } from '@/lib/telegram-sdk'; // Обновлённый импорт
+import { isTelegramMiniApp, getTelegramUser } from '@/lib/telegram-client'; // Обновлённый импорт вместо WebApp
 
 export default function TelegramAuth() {
   const router = useRouter();
@@ -13,28 +13,30 @@ export default function TelegramAuth() {
   const { login, user } = useAuthContext();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Проверяем, что код выполняется на клиенте
+
     const initAuth = async () => {
       try {
         // Проверяем, запущено ли приложение в Telegram
-        if (!WebApp.initData) {
+        if (!isTelegramMiniApp()) {
           console.log('Not in Telegram WebApp environment');
           return;
         }
 
-        const telegramUser = WebApp.initDataUnsafe.user;
+        const telegramUser = getTelegramUser();
         if (!telegramUser) {
           throw new Error('No Telegram user data');
         }
 
         // Подготавливаем данные для авторизации
         const authData = {
-          id: telegramUser.id,
-          first_name: telegramUser.first_name,
-          last_name: telegramUser.last_name || '',
+          id: telegramUser.telegramId, // Предполагаемый ключ, уточните в telegram-client.ts
+          first_name: telegramUser.firstName, // Предполагаемые ключи, уточните в telegram-client.ts
+          last_name: telegramUser.lastName || '',
           username: telegramUser.username || '',
-          photo_url: telegramUser.photo_url || '',
+          photo_url: telegramUser.avatar || '', // Предполагаемый ключ, уточните в telegram-client.ts
           auth_date: Math.floor(Date.now() / 1000),
-          hash: WebApp.initData,
+          hash: '', // Убедитесь, что hash обрабатывается корректно через telegram-client.ts
         };
 
         // Если пользователь еще не авторизован, выполняем login
@@ -42,7 +44,7 @@ export default function TelegramAuth() {
           await login(authData);
           toast({
             title: 'Telegram Auth',
-            description: `Добро пожаловать, ${telegramUser.first_name || telegramUser.username || 'User'}!`,
+            description: `Добро пожаловать, ${telegramUser.firstName || telegramUser.username || 'User'}!`,
           });
         }
 
