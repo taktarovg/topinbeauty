@@ -1,11 +1,13 @@
 // src/components/bookings/ClientBookingsList.tsx
 'use client';
 
+'use client';
+
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { useToast } from '@/components/ui/use-toast';
@@ -23,10 +25,10 @@ import {
 import { Calendar, Clock, MapPin, X } from 'lucide-react';
 import type { BookingWithRelations } from '@/types/booking';
 import { BookingStatus } from '@/types/booking'; // Добавляем импорт
+import { cancelBooking } from '@/actions/bookings'; // Импортируем Server Action
 
 interface ClientBookingsListProps {
   bookings: BookingWithRelations[];
-  onCancelBooking: (bookingId: number) => Promise<void>;
 }
 
 const STATUS_BADGES: Record<BookingStatus, { label: string; variant: 'default' | 'success' | 'destructive' | 'secondary' }> = {
@@ -38,7 +40,6 @@ const STATUS_BADGES: Record<BookingStatus, { label: string; variant: 'default' |
 
 export function ClientBookingsList({
   bookings,
-  onCancelBooking,
 }: ClientBookingsListProps) {
   const { toast } = useToast();
   const [isCanceling, setIsCanceling] = useState<Record<number, boolean>>({});
@@ -56,7 +57,7 @@ export function ClientBookingsList({
     setIsCanceling((prev) => ({ ...prev, [bookingId]: true }));
     
     try {
-      await onCancelBooking(bookingId);
+      await cancelBooking(bookingId);
       toast({
         title: 'Запись отменена',
         description: 'Ваша запись была успешно отменена',

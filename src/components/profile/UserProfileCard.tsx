@@ -1,12 +1,15 @@
 // src/components/profile/UserProfileCard.tsx
 'use client';
 
+'use client';
+
 import { User, City, District, MasterProfile, Service } from '@prisma/client';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Edit, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/Avatar';
+import { useRouter } from 'next/navigation'; // Добавляем для навигации
 
 interface UserProfileCardProps {
   user: User & {
@@ -19,6 +22,7 @@ interface UserProfileCardProps {
 }
 
 export function UserProfileCard({ user }: UserProfileCardProps) {
+  const router = useRouter(); // Инициализируем роутер для навигации
   const location = [
     user.city?.name,
     user.district?.name,
@@ -57,10 +61,8 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
               )}
             </div>
           </div>
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/profile/edit">
-              <Edit className="h-5 w-5" />
-            </Link>
+          <Button variant="ghost" size="icon" onClick={() => router.push('/profile/edit')}>
+            <Edit className="h-5 w-5" />
           </Button>
         </div>
 
@@ -70,14 +72,12 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Мои услуги</h2>
               <Button 
-                asChild
                 className="bg-blue-500 hover:bg-blue-600 text-white"
                 size="sm"
+                onClick={() => router.push('/services/create')}
               >
-                <Link href="/services/create">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Добавить услугу
-                </Link>
+                <Plus className="h-4 w-4 mr-1" />
+                Добавить услугу
               </Button>
             </div>
 
@@ -116,11 +116,9 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          asChild
+                          onClick={() => router.push(`/services/${service.id}/edit`)}
                         >
-                          <Link href={`/services/${service.id}/edit`}>
-                            <Edit className="h-4 w-4" />
-                          </Link>
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -143,12 +141,10 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
               Создайте свою первую услугу и станьте мастером
             </p>
             <Button 
-              asChild
               className="bg-blue-500 hover:bg-blue-600 text-white"
+              onClick={() => router.push('/services/create')}
             >
-              <Link href="/services/create">
-                Создать услугу
-              </Link>
+              Создать услугу
             </Button>
           </div>
         )}

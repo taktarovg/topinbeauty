@@ -1,26 +1,17 @@
 // src/app/bookings/page.tsx
 
-'use client'
-
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { ClientBookingsList } from '@/components/bookings/ClientBookingsList';
 import { cookies } from 'next/headers';
-import { NextRequest } from 'next/server';
 import type { BookingWithRelations } from '@/types/booking';
 
 export default async function BookingsPage() {
   const cookieStore = cookies();
   const token = cookieStore.get('sessionToken')?.value;
-  const request = {
-    headers: new Headers({
-      'Authorization': token ? `Bearer ${token}` : '',
-    }),
-  } as NextRequest;
 
-  const session = await getSession(request);
-
+  const session = await getSession({ cookies: cookieStore });
   if (!session?.user) {
     redirect('/login');
   }
@@ -44,13 +35,13 @@ export default async function BookingsPage() {
               },
               city: {
                 select: {
-                  id: true, // Добавляем id
+                  id: true,
                   name: true,
                 },
               },
               district: {
                 select: {
-                  id: true, // Добавляем id
+                  id: true,
                   name: true,
                 },
               },
@@ -78,13 +69,13 @@ export default async function BookingsPage() {
           },
           city: {
             select: {
-              id: true, // Добавляем id
+              id: true,
               name: true,
             },
           },
           district: {
             select: {
-              id: true, // Добавляем id
+              id: true,
               name: true,
             },
           },
@@ -106,21 +97,7 @@ export default async function BookingsPage() {
         </p>
       </div>
 
-      <ClientBookingsList
-        bookings={bookings}
-        onCancelBooking={async (bookingId: number) => {
-          'use server';
-          try {
-            await prisma.booking.update({
-              where: { id: bookingId },
-              data: { status: 'CANCELED' },
-            });
-          } catch (error) {
-            console.error('Failed to cancel booking:', error);
-            throw new Error('Failed to cancel booking');
-          }
-        }}
-      />
+      <ClientBookingsList bookings={bookings} />
     </div>
   );
 }

@@ -1,26 +1,17 @@
 // src/app/profile/page.tsx
 
-'use client'
-
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { UserProfileCard } from '@/components/profile/UserProfileCard';
-import { cookies } from 'next/headers'; // Добавляем импорт cookies
-import { NextRequest } from 'next/server'; // Добавляем импорт NextRequest
+import { cookies } from 'next/headers';
 
 export default async function ProfilePage() {
-  // Создаем объект request с использованием cookies
   const cookieStore = cookies();
   const token = cookieStore.get('sessionToken')?.value;
-  const request = {
-    headers: new Headers({
-      'Authorization': token ? `Bearer ${token}` : '',
-    }),
-  } as NextRequest;
 
-  const session = await getSession(request);
-  if (!session?.user) { // Обновляем проверку на session.user
+  const session = await getSession({ cookies: cookieStore });
+  if (!session?.user) {
     redirect('/login');
   }
 
@@ -33,13 +24,11 @@ export default async function ProfilePage() {
       district: true,
       masterProfile: {
         include: {
-          services: true, // Добавляем включение услуг
+          services: true,
         },
       },
     },
   });
-
-  console.log('Fetched user data:', user);
 
   if (!user) {
     redirect('/login');
