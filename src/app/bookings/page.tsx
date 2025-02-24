@@ -1,5 +1,6 @@
 // src/app/bookings/page.tsx
 
+// src/app/bookings/page.tsx
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
@@ -8,10 +9,9 @@ import { cookies } from 'next/headers';
 import type { BookingWithRelations } from '@/types/booking';
 
 export default async function BookingsPage() {
-  const cookieStore = cookies();
-  const token = cookieStore.get('sessionToken')?.value;
+  const cookieStore = cookies(); // Получаем объект cookies
+  const session = await getSession({ cookies: cookieStore }); // Передаём cookieStore напрямую
 
-  const session = await getSession({ cookies: cookieStore });
   if (!session?.user) {
     redirect('/login');
   }

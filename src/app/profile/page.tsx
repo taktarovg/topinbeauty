@@ -1,5 +1,6 @@
 // src/app/profile/page.tsx
 
+// src/app/profile/page.tsx
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
@@ -7,10 +8,9 @@ import { UserProfileCard } from '@/components/profile/UserProfileCard';
 import { cookies } from 'next/headers';
 
 export default async function ProfilePage() {
-  const cookieStore = cookies();
-  const token = cookieStore.get('sessionToken')?.value;
+  const cookieStore = cookies(); // Получаем объект cookies
+  const session = await getSession({ cookies: cookieStore }); // Передаём cookieStore напрямую
 
-  const session = await getSession({ cookies: cookieStore });
   if (!session?.user) {
     redirect('/login');
   }
