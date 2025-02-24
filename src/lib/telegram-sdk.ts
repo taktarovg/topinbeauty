@@ -1,4 +1,6 @@
 // src/lib/telegram-sdk.ts
+'use client'; // Добавляем директиву для изоляции клиентского кода
+
 import { init } from '@telegram-apps/sdk';
 import type { TelegramWebApp } from './telegram-client';
 
