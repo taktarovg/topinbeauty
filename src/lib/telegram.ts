@@ -1,4 +1,7 @@
 // src/lib/telegram.ts
+
+'use client'; // Добавляем директиву для изоляции клиентского кода
+
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { TelegramBotError } from '@/types/errors';

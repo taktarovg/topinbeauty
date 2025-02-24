@@ -1,24 +1,16 @@
-// src/app/page.tsx
+// src/app/(public)/page.tsx
 
-'use client'
-
-import { getTelegramUser } from '@/lib/telegram-client';
-import { Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
 import { ServiceList } from '@/components/services/ServiceList';
 import { FilterBar } from '@/components/services/FilterBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { unstable_noStore as noStore } from 'next/cache';
-import dynamic from 'next/dynamic';
+import type { Metadata } from 'next';
 
-// Динамически импортируем TelegramAutoAuth только на клиенте
-const DynamicTelegramAutoAuth = dynamic(
-  () => import('@/components/telegram/TelegramAutoAuth'),
-  { 
-    ssr: false,  // Отключаем SSR для компонента
-    loading: () => null  // Не показываем loader при загрузке
-  }
-);
+export const metadata: Metadata = {
+  title: 'TopInBeauty - Главная',
+  description: 'Найдите лучших мастеров красоты и забронируйте услуги онлайн через Telegram.',
+};
 
 interface HomePageProps {
   searchParams: {
@@ -30,9 +22,6 @@ interface HomePageProps {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   noStore();
-
-  console.log('=== Page Load Start ===');
-  console.log('Search Params:', searchParams);
 
   // Получаем услуги с подсчетом избранного
   const services = await prisma.service.findMany({
@@ -103,7 +92,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       where: {
         parentId: null,
       },
-      select: { // Ограничиваем выборку только нужными полями
+      select: {
         id: true,
         name: true,
       },
@@ -141,29 +130,19 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   // Преобразуем категории для FilterBar
   const transformedCategories = categories.map((category) => ({
-    id: category.id.toString(), // Преобразуем number в string
+    id: category.id.toString(),
     name: category.name,
   }));
 
-  console.log('Services transformed:', transformedServices);
-
   return (
     <main className="max-w-md mx-auto pb-16">
-      {/* Компонент автоматической авторизации Telegram */}
-      <Suspense fallback={null}>
-        <DynamicTelegramAutoAuth />
-      </Suspense>
-
-      {/* Основной контент */}
       <FilterBar
         cities={cities}
         districts={districts}
         categories={transformedCategories}
       />
       <div className="space-y-4 p-2">
-        <Suspense fallback={<Skeleton className="h-[200px] w-full mx-2 mt-2" />}>
-          <ServiceList services={transformedServices} />
-        </Suspense>
+        <ServiceList services={transformedServices} />
       </div>
     </main>
   );

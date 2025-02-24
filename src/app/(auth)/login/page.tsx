@@ -1,32 +1,43 @@
-// src/app/(auth)/login/page.tsx
-'use client';
+// src/app/(auth)/login/page.tsx'use client';
 
-import dynamic from 'next/dynamic'; // Импорт для динамического импорта
-import { useAuthContext } from '@/providers/AuthProvider'; // Хук для контекста
-import { useEffect, useState } from 'react'; // Хуки для управления состоянием и эффектами
-import { useRouter } from 'next/navigation'; // Для навигации
+import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthContext } from '@/providers/AuthProvider';
 
 // Динамически импортируем TelegramAuth с отключением SSR
 const TelegramAuth = dynamic(() => import('@/components/telegram/TelegramAuth').then(mod => mod.TelegramAuth), {
-  ssr: false, // Отключаем серверный рендеринг для TelegramAuth
+  ssr: false,
 });
 
 export default function LoginPage() {
-  const { isTelegramWebApp } = useAuthContext(); // Получаем состояние из контекста
-  const [showLoading, setShowLoading] = useState(false); // Локальное состояние для отображения загрузки
+  const { isTelegramWebApp, user, isLoading } = useAuthContext();
   const router = useRouter();
 
-  // Проверяем, выполняется ли код на клиенте, и инициализируем авторизацию
   useEffect(() => {
-    if (typeof window !== 'undefined' && isTelegramWebApp) {
-      const user = getTelegramUser(); // Импортируем и вызываем только на клиенте
-      if (user) {
-        router.push('/'); // Перенаправляем на главную страницу
-      }
+    if (!isLoading && user) {
+      router.push('/');
     }
-  }, [isTelegramWebApp, router]);
+  }, [user, isLoading, router]);
 
-  // Если мы в Telegram WebApp, показываем сообщение о загрузке
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-12">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">
+              Загрузка...
+            </h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return null; // Перенаправление уже произошло
+  }
+
   if (isTelegramWebApp) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-12">
@@ -41,27 +52,32 @@ export default function LoginPage() {
     );
   }
 
+  // Резервный сценарий для браузера: ручная авторизация через Telegram Web
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-12">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold">
-            Для регистрации или авторизации войдите через Telegram
+            Авторизация через Telegram
           </h1>
           <p className="mt-2 text-gray-600">
-            После авторизации Вы сможете пользоваться всем функционалом
+            Откройте этот сервис в Telegram Mini App для автоматической авторизации или нажмите кнопку ниже для ручной авторизации.
           </p>
         </div>
-
         <div className="mt-8 flex justify-center">
-          <TelegramAuth /> {/* Используем динамически импортированный компонент */}
+          <button
+            onClick={() => window.location.href = 'tg://resolve?domain=your_bot_name'}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded"
+          >
+            Войти через Telegram
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// Импортируем getTelegramUser только на клиенте
+// Импортируем getTelegramUser только на клиенте (оставляем для совместимости)
 function getTelegramUser() {
   if (typeof window !== 'undefined') {
     return import('@/lib/telegram-client').then(mod => mod.getTelegramUser());

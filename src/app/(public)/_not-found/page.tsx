@@ -1,8 +1,9 @@
-// src/app/not-found.tsx - new
-'use client'
+// src/app/(public)/_not-found/page.tsx - new
 
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+'use client';
+
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
@@ -17,5 +18,5 @@ export default function NotFound() {
         </Link>
       </Button>
     </div>
-  )
+  );
 }

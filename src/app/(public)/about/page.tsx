@@ -1,8 +1,13 @@
-// src/app/about/page.tsx
-
+// src/app/(public)/about/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'О сервисе - TopInBeauty',
+  description: 'Узнайте больше о TopInBeauty — удобном сервисе для записи к мастерам красоты через Telegram.',
+};
 
 export default function AboutPage() {
   return (
@@ -55,8 +60,3 @@ export default function AboutPage() {
     </div>
   );
 }
-
-export const metadata = {
-  title: 'О сервисе - TopInBeauty',
-  description: 'Узнайте больше о TopInBeauty — удобном сервисе для записи к мастерам красоты через Telegram.',
-};
