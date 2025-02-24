@@ -1,16 +1,14 @@
 // src/lib/session.ts
-
 import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers'; // Импорт для серверных компонентов
 import { prisma } from './prisma'; // Импорт Prisma для поиска пользователя
-import type { RequestCookies } from 'next/headers'; // Обновляем тип на RequestCookies
 
 /**
  * Получает сессию пользователя из токена в cookies (для серверных компонентов).
  * @param options - Объект с cookies, полученными через next/headers
  * @returns Объект сессии или null, если токен отсутствует или недействителен
  */
-export async function getSession({ cookies }: { cookies: RequestCookies }) {
+export async function getSession({ cookies }: { cookies: ReturnType<typeof cookies> }) {
   const sessionToken = cookies.get('sessionToken')?.value;
   if (!sessionToken) return null;
 
