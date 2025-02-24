@@ -1,12 +1,16 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { AuthProvider } from '@/providers/AuthProvider';
+//import { AuthProvider } from '@/providers/AuthProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { Header } from '@/components/layout/Header';
 import { Navigation } from '@/components/layout/Navigation';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
+
+const AuthProvider = dynamic(() => import('@/providers/AuthProvider'), {
+  ssr: false, // Отключаем серверный рендеринг
+});
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
